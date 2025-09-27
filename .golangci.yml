@@ -1,0 +1,157 @@
+run:
+  deadline: 5m
+  tests: true
+  build-tags:
+    - integration
+    - e2e
+
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - golint
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - structcheck
+    - varcheck
+    - ineffassign
+    - deadcode
+    - typecheck
+    - gosec
+    - goconst
+    - gocyclo
+    - dupl
+    - misspell
+    - unparam
+    - nakedret
+    - prealloc
+    - scopelint
+    - gocritic
+    - gochecknoinits
+    - gochecknoglobals
+    - godox
+    - funlen
+    - whitespace
+    - wsl
+    - goprintffuncname
+    - gomnd
+    - goerr113
+    - gomodguard
+    - nolintlint
+    - exhaustive
+    - exportloopref
+    - paralleltest
+
+  disable:
+    - maligned
+    - depguard
+    - lll
+    - gocognit
+    - nestif
+    - godot
+    - testpackage
+    - wrapcheck
+    - nlreturn
+    - exhaustivestruct
+    - forbidigo
+    - forcetypeassert
+    - ifshort
+    - cyclop
+    - predeclared
+    - revive
+    - tagliatelle
+    - maintidx
+
+linters-settings:
+  gofmt:
+    simplify: true
+
+  goimports:
+    local-prefixes: github.com/kazuhirokondo/go-async-practice
+
+  govet:
+    check-shadowing: true
+    enable-all: true
+
+  golint:
+    min-confidence: 0.8
+
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+  gocyclo:
+    min-complexity: 15
+
+  dupl:
+    threshold: 100
+
+  funlen:
+    lines: 100
+    statements: 60
+
+  gomnd:
+    settings:
+      mnd:
+        checks:
+          - argument
+          - case
+          - condition
+          - operation
+          - return
+          - assign
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+
+issues:
+  exclude-use-default: false
+
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - funlen
+        - goconst
+        - gomnd
+
+    # Exclude benchmarks from some checks
+    - path: benchmark.*\.go
+      linters:
+        - gomnd
+        - funlen
+        - goconst
+
+    # Exclude examples from some checks
+    - path: examples/
+      linters:
+        - gomnd
+        - goconst
+        - gochecknoglobals
+        - funlen
+
+    # Allow fmt.Printf in main packages
+    - path: cmd/
+      linters:
+        - forbidigo
+
+  max-same-issues: 0
+  max-issues-per-linter: 0
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  sort-results: true
