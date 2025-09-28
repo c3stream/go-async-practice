@@ -27,19 +27,19 @@ func Challenge09_DistributedLockSolution() {
 func solution1_TTLWithFencingToken() {
 	fmt.Println("\n📝 解決策1: TTL付き分散ロック（フェンストークン対応）")
 
-	type DistributedLock struct {
-		mu           sync.RWMutex
-		locks        map[string]*LockInfo
-		fencingToken atomic.Uint64
-		cleanupStop  chan struct{}
-	}
-
 	type LockInfo struct {
 		holder       string
 		timestamp    time.Time
 		ttl          time.Duration
 		fencingToken uint64
 		version      int64 // 楽観的ロック用
+	}
+
+	type DistributedLock struct {
+		mu           sync.RWMutex
+		locks        map[string]*LockInfo
+		fencingToken atomic.Uint64
+		cleanupStop  chan struct{}
 	}
 
 	dl := &DistributedLock{
@@ -186,17 +186,17 @@ func solution1_TTLWithFencingToken() {
 func solution2_RedlockAlgorithm() {
 	fmt.Println("\n📝 解決策2: Redlockアルゴリズム風実装")
 
-	type RedlockNode struct {
-		id    string
-		mu    sync.RWMutex
-		locks map[string]*LockInfo
-	}
-
 	type LockInfo struct {
 		holder    string
 		timestamp time.Time
 		ttl       time.Duration
 		value     string // ユニークな値
+	}
+
+	type RedlockNode struct {
+		id    string
+		mu    sync.RWMutex
+		locks map[string]*LockInfo
 	}
 
 	type Redlock struct {

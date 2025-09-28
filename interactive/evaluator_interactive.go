@@ -2,11 +2,9 @@ package interactive
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"os"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"

@@ -1,7 +1,6 @@
 package challenges
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -11,22 +10,22 @@ import (
 // 問題: 複数のノードからのアクセスを想定した分散ロック機構に問題があります
 func Challenge09_DistributedLockProblem() {
 	fmt.Println("\n🔥 チャレンジ9: 分散ロックの問題")
-	fmt.Println("=" + repeatString("=", 50))
+	fmt.Println("===================================================")
 	fmt.Println("問題: 分散環境でのロック機構が正しく動作しません")
 	fmt.Println("症状: デッドロック、二重ロック、ロストアップデート")
 	fmt.Println("\n⚠️  このコードには複数の問題があります:")
 
 	// 問題のある分散ロック実装
-	type DistributedLock struct {
-		mu       sync.Mutex
-		locks    map[string]*LockInfo
-		timeout  time.Duration
-	}
-
 	type LockInfo struct {
 		holder    string
 		timestamp time.Time
 		// 問題1: TTLの考慮なし
+	}
+
+	type DistributedLock struct {
+		mu       sync.Mutex
+		locks    map[string]*LockInfo
+		timeout  time.Duration
 	}
 
 	dl := &DistributedLock{
@@ -65,7 +64,7 @@ func Challenge09_DistributedLockProblem() {
 	}
 
 	// 問題のあるロック延長
-	extend := func(nodeID, resource string) bool {
+	_ = func(nodeID, resource string) bool {
 		// 問題5: ロックを取得せずに延長
 		if lock, exists := dl.locks[resource]; exists {
 			lock.timestamp = time.Now()

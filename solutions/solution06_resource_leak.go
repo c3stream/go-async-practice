@@ -14,7 +14,7 @@ import (
 // Solution06_FixedResourceLeak - リソースリーク問題の解決版
 func Solution06_FixedResourceLeak() {
 	fmt.Println("\n🔧 解答6: リソースリークの修正")
-	fmt.Println("=" + repeatString("=", 50))
+	fmt.Println("===================================================")
 
 	// 解法1: HTTP クライアントの適切な管理
 	solution1HTTPClient()
@@ -178,7 +178,7 @@ func solution2FileHandles() {
 		maxFiles: 10,
 	}
 
-	pool.Open = func(name string) (*os.File, error) {
+	poolOpen := func(name string) (*os.File, error) {
 		pool.mu.Lock()
 		defer pool.mu.Unlock()
 
@@ -205,7 +205,7 @@ func solution2FileHandles() {
 		return file, nil
 	}
 
-	pool.CloseAll = func() {
+	poolCloseAll := func() {
 		pool.mu.Lock()
 		defer pool.mu.Unlock()
 
@@ -224,11 +224,11 @@ func solution2FileHandles() {
 	// プールを使用
 	for i := 0; i < 3; i++ {
 		name := fmt.Sprintf("pooled_%d", i)
-		if f, err := pool.Open(name); err == nil {
+		if f, err := poolOpen(name); err == nil {
 			f.WriteString("pooled data\n")
 		}
 	}
-	pool.CloseAll()
+	poolCloseAll()
 
 	fmt.Println("  ✅ すべてのファイルハンドルが適切に管理されました")
 }
@@ -269,7 +269,7 @@ func solution3DatabaseConnections() {
 	}
 
 	// 初期化
-	pool.Init = func() {
+	poolInit := func() {
 		pool.mu.Lock()
 		defer pool.mu.Unlock()
 
@@ -285,7 +285,7 @@ func solution3DatabaseConnections() {
 	}
 
 	// 接続取得
-	pool.Get = func() (*DBConnection, error) {
+	poolGet := func() (*DBConnection, error) {
 		pool.mu.RLock()
 		defer pool.mu.RUnlock()
 
@@ -304,7 +304,7 @@ func solution3DatabaseConnections() {
 	}
 
 	// 接続返却
-	pool.Put = func(conn *DBConnection) {
+	poolPut := func(conn *DBConnection) {
 		conn.mu.Lock()
 		conn.InUse = false
 		conn.LastUsed = time.Now()
@@ -313,7 +313,7 @@ func solution3DatabaseConnections() {
 	}
 
 	// アイドル接続のクリーンアップ
-	pool.CleanupIdle = func() {
+	poolCleanupIdle := func() {
 		pool.mu.RLock()
 		defer pool.mu.RUnlock()
 
@@ -336,7 +336,7 @@ func solution3DatabaseConnections() {
 	}
 
 	// 統計情報
-	pool.Stats = func() {
+	poolStats := func() {
 		pool.mu.RLock()
 		defer pool.mu.RUnlock()
 
@@ -352,7 +352,7 @@ func solution3DatabaseConnections() {
 	}
 
 	// プール初期化
-	pool.Init()
+	poolInit()
 
 	// 並行処理でデータベース操作をシミュレート
 	var wg sync.WaitGroup
@@ -362,7 +362,7 @@ func solution3DatabaseConnections() {
 			defer wg.Done()
 
 			// 接続取得
-			conn, err := pool.Get()
+			conn, err := poolGet()
 			if err != nil {
 				fmt.Printf("  ⚠ タスク %d: %v\n", id, err)
 				return
@@ -372,7 +372,7 @@ func solution3DatabaseConnections() {
 			time.Sleep(50 * time.Millisecond)
 
 			// 接続返却
-			pool.Put(conn)
+			poolPut(conn)
 		}(i)
 	}
 
@@ -383,8 +383,8 @@ func solution3DatabaseConnections() {
 
 		for i := 0; i < 3; i++ {
 			<-ticker.C
-			pool.CleanupIdle()
-			pool.Stats()
+			poolCleanupIdle()
+			poolStats()
 		}
 	}()
 
@@ -433,7 +433,7 @@ func solution4GoroutineResources() {
 	manager.ctx, manager.cancel = context.WithCancel(context.Background())
 
 	// チャネル登録
-	manager.RegisterChannel = func() chan interface{} {
+	managerRegisterChannel := func() chan interface{} {
 		manager.mu.Lock()
 		defer manager.mu.Unlock()
 
@@ -443,7 +443,7 @@ func solution4GoroutineResources() {
 	}
 
 	// ゴルーチン起動
-	manager.StartGoroutine = func(f func(context.Context)) {
+	managerStartGoroutine := func(f func(context.Context)) {
 		manager.wg.Add(1)
 		go func() {
 			defer manager.wg.Done()
@@ -452,7 +452,7 @@ func solution4GoroutineResources() {
 	}
 
 	// クリーンアップ
-	manager.Cleanup = func() {
+	managerCleanup := func() {
 		fmt.Println("  クリーンアップ開始...")
 
 		// Context をキャンセル
@@ -483,10 +483,10 @@ func solution4GoroutineResources() {
 
 	// リソースを使用
 	for i := 0; i < 3; i++ {
-		ch := manager.RegisterChannel()
+		ch := managerRegisterChannel()
 		workerID := i
 
-		manager.StartGoroutine(func(ctx context.Context) {
+		managerStartGoroutine(func(ctx context.Context) {
 			fmt.Printf("  ワーカー %d: 開始\n", workerID)
 			for {
 				select {
@@ -518,7 +518,7 @@ func solution4GoroutineResources() {
 	time.Sleep(100 * time.Millisecond)
 
 	// クリーンアップ実行
-	manager.Cleanup()
+	managerCleanup()
 
 	fmt.Println("  ✅ すべてのリソースが適切に解放されました")
 }
@@ -538,7 +538,7 @@ type ResourceManager struct {
 // Solution06_BestPractices - リソース管理のベストプラクティス
 func Solution06_BestPractices() {
 	fmt.Println("\n📚 リソース管理のベストプラクティス")
-	fmt.Println("=" + repeatString("=", 50))
+	fmt.Println("===================================================")
 
 	practices := []string{
 		"1. defer を使って確実にリソースをクローズ",

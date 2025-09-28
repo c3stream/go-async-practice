@@ -11,24 +11,24 @@ import (
 // 問題: 複数のデータストア間で一貫性が保たれない
 func Challenge12_ConsistencyProblem() {
 	fmt.Println("\n🔥 チャレンジ12: 分散システムの一貫性問題")
-	fmt.Println("=" + repeatString("=", 50))
+	fmt.Println("===================================================")
 	fmt.Println("問題: マイクロサービス間でデータ一貫性が崩れます")
 	fmt.Println("症状: ダーティリード、ロストアップデート、ファントムリード")
 	fmt.Println("\n⚠️  このコードには複数の問題があります:")
 
 	// 問題のある分散トランザクション
+	type DataStore struct {
+		mu   sync.RWMutex
+		data map[string]interface{}
+		// 問題2: バージョン管理なし
+	}
+
 	type DistributedSystem struct {
 		// 複数のデータストア
 		primaryDB   *DataStore
 		cacheDB     *DataStore
 		searchIndex *DataStore
 		// 問題1: トランザクションコーディネーターなし
-	}
-
-	type DataStore struct {
-		mu   sync.RWMutex
-		data map[string]interface{}
-		// 問題2: バージョン管理なし
 	}
 
 	system := &DistributedSystem{
@@ -142,10 +142,6 @@ func Challenge12_ConsistencyProblem() {
 	wg.Wait()
 
 	// 最終的な一貫性チェック
-	checkConsistency(system)
-}
-
-func checkConsistency(system *DistributedSystem) {
 	fmt.Println("\n最終一貫性チェック:")
 
 	inconsistencies := 0

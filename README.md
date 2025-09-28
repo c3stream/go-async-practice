@@ -74,11 +74,18 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Challenge 15: 分散キャッシュの問題
 - Challenge 16: ストリーム処理の問題
 
-### 3. Solutions（解答例）- 8問完全対応（1-8）
+### 3. Solutions（解答例）- 14問完全対応（1-14）
 各チャレンジの複数の解法を提示：
 - 各問題に対して2-4パターンの解法
 - ベストプラクティスの解説付き
 - パフォーマンス比較データ込み
+
+**最新追加（9-14）**：
+- Challenge 9-10: 分散ロック、メッセージ順序保証
+- Challenge 11: バックプレッシャー処理（プル型、トークンバケット、アダプティブ）
+- Challenge 12: 分散一貫性（2PC、Saga、Event Sourcing + CQRS）
+- Challenge 13: イベントソーシング（Snapshot、CQRS、Versioning）
+- Challenge 14: Sagaパターン（Compensating、Orchestration、Choreography）
 
 ### 4. Benchmarks（ベンチマーク）
 パフォーマンス特性を理解：
@@ -122,11 +129,15 @@ go run cmd/runner/main.go -mode=challenge -challenge=13  # イベントソーシ
 
 # challenges/challenge0X_*.go を編集して修正
 
-# 解答例を確認（全8問対応）
-go run cmd/runner/main.go -mode=solution -challenge=1
-go run cmd/runner/main.go -mode=solution -challenge=8  # パフォーマンス改善
+# 解答例を確認（1-14完全対応）
+go run cmd/runner/main.go -mode=solution -challenge=1   # デッドロック
+go run cmd/runner/main.go -mode=solution -challenge=8   # パフォーマンス改善
+go run cmd/runner/main.go -mode=solution -challenge=11  # バックプレッシャー
+go run cmd/runner/main.go -mode=solution -challenge=12  # 分散一貫性
+go run cmd/runner/main.go -mode=solution -challenge=13  # イベントソーシング
+go run cmd/runner/main.go -mode=solution -challenge=14  # Sagaパターン
 
-# チャレンジ9-16は解答作成中
+# チャレンジ15-16は解答作成中
 ```
 
 ### ベンチマークを実行

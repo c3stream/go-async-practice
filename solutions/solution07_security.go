@@ -141,7 +141,7 @@ func solution2RaceConditionSecurity() {
 	}
 
 	// アトミック操作で安全にインクリメント
-	counter.Increment = func() (bool, int64) {
+	counterIncrement := func() (bool, int64) {
 		newVal := atomic.AddInt64(&counter.value, 1)
 		if newVal > counter.limit {
 			// ロールバック
@@ -162,7 +162,7 @@ func solution2RaceConditionSecurity() {
 	}
 
 	// 権限の設定（スレッドセーフ）
-	ac.SetPermission = func(user, resource string, allowed bool) {
+	acSetPermission := func(user, resource string, allowed bool) {
 		ac.mu.Lock()
 		defer ac.mu.Unlock()
 
@@ -175,7 +175,7 @@ func solution2RaceConditionSecurity() {
 	}
 
 	// 権限のチェック（スレッドセーフ）
-	ac.CheckPermission = func(user, resource string) bool {
+	acCheckPermission := func(user, resource string) bool {
 		ac.mu.RLock()
 		defer ac.mu.RUnlock()
 
@@ -199,7 +199,7 @@ func solution2RaceConditionSecurity() {
 		lastRefill: time.Now(),
 	}
 
-	limiter.TryAcquire = func() bool {
+	limiterTryAcquire := func() bool {
 		// アトミックにトークンを取得
 		if atomic.LoadInt64(&limiter.tokens) <= 0 {
 			// リフィルチェック
@@ -231,7 +231,7 @@ func solution2RaceConditionSecurity() {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			if ok, val := counter.Increment(); ok {
+			if ok, val := counterIncrement(); ok {
 				if id%20 == 0 {
 					fmt.Printf("    カウンター: %d/100\n", val)
 				}
@@ -243,17 +243,17 @@ func solution2RaceConditionSecurity() {
 		atomic.LoadInt64(&counter.value), counter.limit)
 
 	// 権限管理テスト
-	ac.SetPermission("alice", "read", true)
-	ac.SetPermission("alice", "write", false)
-	ac.SetPermission("bob", "read", true)
-	ac.SetPermission("bob", "write", true)
+	acSetPermission("alice", "read", true)
+	acSetPermission("alice", "write", false)
+	acSetPermission("bob", "read", true)
+	acSetPermission("bob", "write", true)
 
 	users := []string{"alice", "bob", "charlie"}
 	resources := []string{"read", "write"}
 
 	for _, user := range users {
 		for _, resource := range resources {
-			if ac.CheckPermission(user, resource) {
+			if acCheckPermission(user, resource) {
 				fmt.Printf("  ✓ %s は %s 権限を持っています\n", user, resource)
 			}
 		}
@@ -263,7 +263,7 @@ func solution2RaceConditionSecurity() {
 	fmt.Println("\n  レート制限テスト:")
 	successfulRequests := 0
 	for i := 0; i < 20; i++ {
-		if limiter.TryAcquire() {
+		if limiterTryAcquire() {
 			successfulRequests++
 			fmt.Printf("    リクエスト %d: 成功\n", i+1)
 		} else {
@@ -332,7 +332,7 @@ func solution3ResourceExhaustionProtection() {
 	}
 
 	// タスク送信（制限付き）
-	pool.Submit = func(task func()) error {
+	poolSubmit := func(task func()) error {
 		// タスク数チェック
 		if atomic.LoadInt64(&pool.taskCount) >= pool.maxTasks {
 			return fmt.Errorf("タスク数が上限に達しました")
@@ -359,7 +359,7 @@ func solution3ResourceExhaustionProtection() {
 		maxAllocation: 100 * 1024 * 1024, // 100MB
 	}
 
-	memGuard.Allocate = func(size int64) ([]byte, error) {
+	memGuardAllocate := func(size int64) ([]byte, error) {
 		memGuard.mu.Lock()
 		defer memGuard.mu.Unlock()
 
@@ -371,7 +371,7 @@ func solution3ResourceExhaustionProtection() {
 		return make([]byte, size), nil
 	}
 
-	memGuard.Free = func(size int64) {
+	memGuardFree := func(size int64) {
 		memGuard.mu.Lock()
 		defer memGuard.mu.Unlock()
 		memGuard.current -= size
@@ -400,7 +400,7 @@ func solution3ResourceExhaustionProtection() {
 	rejectedTasks := 0
 	for i := 0; i < 20; i++ {
 		taskID := i
-		err := pool.Submit(func() {
+		err := poolSubmit(func() {
 			time.Sleep(10 * time.Millisecond)
 			if taskID%5 == 0 {
 				fmt.Printf("    タスク %d 完了\n", taskID)
@@ -422,13 +422,13 @@ func solution3ResourceExhaustionProtection() {
 	}
 
 	for i, size := range allocations {
-		if data, err := memGuard.Allocate(size); err != nil {
+		if data, err := memGuardAllocate(size); err != nil {
 			fmt.Printf("    割り当て %d (%dMB): ❌ %v\n", i+1, size/1024/1024, err)
 		} else {
 			fmt.Printf("    割り当て %d (%dMB): ✓ 成功\n", i+1, size/1024/1024)
 			_ = data
 			// 実際のアプリケーションでは適切に解放
-			defer memGuard.Free(size)
+			defer memGuardFree(size)
 		}
 	}
 
@@ -509,7 +509,7 @@ func solution4SecureRandomGeneration() {
 		ttl:      5 * time.Minute,
 	}
 
-	sessionMgr.CreateSession = func() (string, error) {
+	sessionMgrCreateSession := func() (string, error) {
 		token, err := generateSecureToken(32)
 		if err != nil {
 			return "", err
@@ -522,7 +522,7 @@ func solution4SecureRandomGeneration() {
 		return token, nil
 	}
 
-	sessionMgr.ValidateSession = func(token string) bool {
+	sessionMgrValidateSession := func(token string) bool {
 		sessionMgr.mu.RLock()
 		createdAt, exists := sessionMgr.sessions[token]
 		sessionMgr.mu.RUnlock()
@@ -555,7 +555,7 @@ func solution4SecureRandomGeneration() {
 		ttl:    1 * time.Minute,
 	}
 
-	nonceMgr.GenerateNonce = func() (string, error) {
+	nonceMgrGenerateNonce := func() (string, error) {
 		nonce, err := generateSecureToken(16)
 		if err != nil {
 			return "", err
@@ -568,7 +568,7 @@ func solution4SecureRandomGeneration() {
 		return nonce, nil
 	}
 
-	nonceMgr.ValidateNonce = func(nonce string) bool {
+	nonceMgrValidateNonce := func(nonce string) bool {
 		nonceMgr.mu.Lock()
 		defer nonceMgr.mu.Unlock()
 
@@ -612,7 +612,7 @@ func solution4SecureRandomGeneration() {
 	fmt.Println("\n  セッション管理テスト:")
 	sessions := make([]string, 5)
 	for i := 0; i < 5; i++ {
-		if session, err := sessionMgr.CreateSession(); err == nil {
+		if session, err := sessionMgrCreateSession(); err == nil {
 			sessions[i] = session
 			fmt.Printf("    セッション %d 作成\n", i+1)
 		}
@@ -620,23 +620,23 @@ func solution4SecureRandomGeneration() {
 
 	// 検証
 	for i, session := range sessions {
-		if sessionMgr.ValidateSession(session) {
+		if sessionMgrValidateSession(session) {
 			fmt.Printf("    セッション %d: ✓ 有効\n", i+1)
 		}
 	}
 
 	// ノンス検証テスト
 	fmt.Println("\n  ノンス（リプレイ攻撃対策）テスト:")
-	nonce, _ := nonceMgr.GenerateNonce()
+	nonce, _ := nonceMgrGenerateNonce()
 	fmt.Printf("    ノンス生成: %s\n", nonce[:8]+"...")
 
 	// 初回検証
-	if nonceMgr.ValidateNonce(nonce) {
+	if nonceMgrValidateNonce(nonce) {
 		fmt.Println("    初回検証: ✓ 成功")
 	}
 
 	// リプレイ試行
-	if !nonceMgr.ValidateNonce(nonce) {
+	if !nonceMgrValidateNonce(nonce) {
 		fmt.Println("    リプレイ検証: ✓ 正しく拒否")
 	}
 

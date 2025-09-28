@@ -11,7 +11,7 @@ import (
 // Challenge14_SagaSolution - Sagaパターン問題の解決
 func Challenge14_SagaSolution() {
 	fmt.Println("\n✅ チャレンジ14: Sagaパターン問題の解決")
-	fmt.Println("=" + repeatString("=", 50))
+	fmt.Println("===================================================")
 
 	// 解決策1: 補償付きSaga
 	solution1_CompensatingSaga()
@@ -262,14 +262,6 @@ func solution2_OrchestrationSaga() {
 		Timestamp time.Time
 	}
 
-	// オーケストレーター
-	type Orchestrator struct {
-		mu         sync.RWMutex
-		sagas      map[string]*SagaState
-		commandBus chan Command
-		eventBus   chan Event
-	}
-
 	type SagaState struct {
 		ID           string
 		CurrentStep  int
@@ -277,6 +269,14 @@ func solution2_OrchestrationSaga() {
 		Status       string // "running", "completed", "compensating", "failed"
 		Context      map[string]interface{}
 		CompletedSteps []string
+	}
+
+	// オーケストレーター
+	type Orchestrator struct {
+		mu         sync.RWMutex
+		sagas      map[string]*SagaState
+		commandBus chan Command
+		eventBus   chan Event
 	}
 
 	orchestrator := &Orchestrator{
@@ -459,12 +459,6 @@ func solution2_OrchestrationSaga() {
 func solution3_ChoreographySaga() {
 	fmt.Println("\n📝 解決策3: コレオグラフィーベースSaga")
 
-	// イベントバス
-	type EventBus struct {
-		mu          sync.RWMutex
-		subscribers map[string][]chan Event
-	}
-
 	type Event struct {
 		ID          string
 		Type        string
@@ -473,6 +467,12 @@ func solution3_ChoreographySaga() {
 		Timestamp   time.Time
 		Success     bool
 		Error       error
+	}
+
+	// イベントバス
+	type EventBus struct {
+		mu          sync.RWMutex
+		subscribers map[string][]chan Event
 	}
 
 	eventBus := &EventBus{

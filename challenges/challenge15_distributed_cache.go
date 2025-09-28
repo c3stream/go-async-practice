@@ -2,7 +2,6 @@ package challenges
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"hash/fnv"
 	"sync"

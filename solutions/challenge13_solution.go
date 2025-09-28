@@ -212,20 +212,9 @@ func solution2_ProjectionSeparation() {
 		customerView: make(map[string]*CustomerView),
 	}
 
-	// イベント発行（書き込み側）
-	publishEvent := func(event OrderEvent) {
-		writeModel.mu.Lock()
-		writeModel.events = append(writeModel.events, event)
-		writeModel.mu.Unlock()
-
-		fmt.Printf("  📝 Event: %s for order %s\n", event.Type, event.OrderID)
-
-		// 非同期でプロジェクション更新
-		go updateProjections(event, readModel)
-	}
-
 	// プロジェクション更新
-	updateProjections := func(event OrderEvent, model *ReadModel) {
+	var updateProjections func(event OrderEvent, model *ReadModel)
+	updateProjections = func(event OrderEvent, model *ReadModel) {
 		model.mu.Lock()
 		defer model.mu.Unlock()
 
@@ -273,6 +262,18 @@ func solution2_ProjectionSeparation() {
 		}
 
 		fmt.Printf("  📊 Projections updated for %s\n", event.OrderID)
+	}
+
+	// イベント発行（書き込み側）
+	publishEvent := func(event OrderEvent) {
+		writeModel.mu.Lock()
+		writeModel.events = append(writeModel.events, event)
+		writeModel.mu.Unlock()
+
+		fmt.Printf("  📝 Event: %s for order %s\n", event.Type, event.OrderID)
+
+		// 非同期でプロジェクション更新
+		go updateProjections(event, readModel)
 	}
 
 	// クエリ（読み取り側）

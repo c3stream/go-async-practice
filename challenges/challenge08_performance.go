@@ -2,7 +2,6 @@ package challenges
 
 import (
 	"fmt"
-	"math/rand"
 	"sync"
 	"sync/atomic"
 	"time"

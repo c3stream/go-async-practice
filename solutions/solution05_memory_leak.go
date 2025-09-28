@@ -380,11 +380,3 @@ func exampleChannelBuffering() {
 	}
 	fmt.Println("    ✓ 適切なバッファリングで deadlock 回避")
 }
-
-func repeatString(s string, n int) string {
-	result := ""
-	for i := 0; i < n; i++ {
-		result += s
-	}
-	return result
-}

@@ -11,26 +11,26 @@ import (
 // 問題: 分散システムでメッセージの順序が保証されない
 func Challenge10_MessageOrderingProblem() {
 	fmt.Println("\n🔥 チャレンジ10: メッセージ順序保証の問題")
-	fmt.Println("=" + repeatString("=", 50))
+	fmt.Println("===================================================")
 	fmt.Println("問題: イベント駆動システムでメッセージ順序が崩れます")
 	fmt.Println("症状: 更新の逆転、状態の不整合、データ競合")
 	fmt.Println("\n⚠️  このコードには複数の問題があります:")
 
 	// 問題のあるメッセージハンドラー
-	type MessageBroker struct {
-		// 問題1: 単一チャネルで順序保証なし
-		messages chan Message
-		handlers map[string][]func(Message)
-		mu       sync.RWMutex
-		wg       sync.WaitGroup
-	}
-
 	type Message struct {
 		ID        int
 		Topic     string
 		Payload   interface{}
 		Timestamp time.Time
 		// 問題2: シーケンス番号なし
+	}
+
+	type MessageBroker struct {
+		// 問題1: 単一チャネルで順序保証なし
+		messages chan Message
+		handlers map[string][]func(Message)
+		mu       sync.RWMutex
+		wg       sync.WaitGroup
 	}
 
 	broker := &MessageBroker{

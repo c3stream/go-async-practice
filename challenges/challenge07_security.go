@@ -30,7 +30,7 @@ func Challenge07_SecurityIssue() {
 	}
 
 	// 問題2: タイミング攻撃に脆弱な認証
-	authenticate := func(password string) bool {
+	_ = func(password string) bool {
 		correctPassword := "secret123"
 
 		// 問題: 文字列比較が早期終了（タイミング攻撃可能）

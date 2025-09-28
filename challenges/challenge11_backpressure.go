@@ -12,21 +12,12 @@ import (
 // 問題: システムが過負荷時に適切にバックプレッシャーを処理できない
 func Challenge11_BackpressureProblem() {
 	fmt.Println("\n🔥 チャレンジ11: バックプレッシャー処理の問題")
-	fmt.Println("=" + repeatString("=", 50))
+	fmt.Println("===================================================")
 	fmt.Println("問題: 高負荷時にシステムが適切に負荷制御できません")
 	fmt.Println("症状: OOM、レスポンス遅延、カスケード障害")
 	fmt.Println("\n⚠️  このコードには複数の問題があります:")
 
 	// 問題のあるプロデューサー・コンシューマーシステム
-	type Pipeline struct {
-		// 問題1: 無制限バッファ
-		input  chan Task
-		output chan Result
-		// 問題2: バックプレッシャーシグナルなし
-		workers int
-		wg      sync.WaitGroup
-	}
-
 	type Task struct {
 		ID   int
 		Data []byte
@@ -36,6 +27,15 @@ func Challenge11_BackpressureProblem() {
 		TaskID int
 		Output []byte
 		Error  error
+	}
+
+	type Pipeline struct {
+		// 問題1: 無制限バッファ
+		input  chan Task
+		output chan Result
+		// 問題2: バックプレッシャーシグナルなし
+		workers int
+		wg      sync.WaitGroup
 	}
 
 	pipeline := &Pipeline{

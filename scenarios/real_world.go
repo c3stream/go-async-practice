@@ -175,14 +175,6 @@ func (s *RealWorldScenarios) Scenario2_RealTimeChat() {
 	fmt.Println("  • メッセージのブロードキャスト")
 	fmt.Println("  • 接続/切断の通知")
 
-	type ChatRoom struct {
-		users     map[string]chan Message
-		join      chan User
-		leave     chan User
-		broadcast chan Message
-		mu        sync.RWMutex
-	}
-
 	type User struct {
 		ID   string
 		Name string
@@ -192,6 +184,14 @@ func (s *RealWorldScenarios) Scenario2_RealTimeChat() {
 		From    string
 		Content string
 		Time    time.Time
+	}
+
+	type ChatRoom struct {
+		users     map[string]chan Message
+		join      chan User
+		leave     chan User
+		broadcast chan Message
+		mu        sync.RWMutex
 	}
 
 	// チャットルーム作成

@@ -55,7 +55,7 @@ go run cmd/runner/main.go
 - **リトライ処理** - エラーハンドリング
 - **バッチ処理** - 効率的なデータ処理
 
-## 🎯 チャレンジ問題（全12問）
+## 🎯 チャレンジ問題（全16問）
 
 ### 基本的な並行処理の問題（1-4）
 1. **デッドロックの修正** - 相互待機の解決
@@ -75,6 +75,12 @@ go run cmd/runner/main.go
 11. **バックプレッシャー処理** - 過負荷時の制御
 12. **分散一貫性** - 複数データストア間の整合性
 
+### 高度な分散パターン（13-16）
+13. **イベントソーシング** - イベントストアとスナップショット
+14. **Sagaパターン** - 分散トランザクション管理
+15. **分散キャッシュ** - キャッシュ一貫性とスタンピード対策
+16. **ストリーム処理** - リアルタイムデータパイプライン
+
 ## 🏃 実行方法
 
 ### 例題の実行
@@ -90,12 +96,19 @@ done
 
 ### チャレンジ問題
 ```bash
-# チャレンジ1-12から選択
-go run cmd/runner/main.go -mode=challenge -challenge=1  # デッドロック
-go run cmd/runner/main.go -mode=challenge -challenge=9  # 分散ロック
+# チャレンジ1-16から選択
+go run cmd/runner/main.go -mode=challenge -challenge=1   # デッドロック
+go run cmd/runner/main.go -mode=challenge -challenge=9   # 分散ロック
+go run cmd/runner/main.go -mode=challenge -challenge=13  # イベントソーシング
 
-# 解答例を確認
-go run cmd/runner/main.go -mode=solution -challenge=1
+# 解答例を確認（1-14完全対応）
+go run cmd/runner/main.go -mode=solution -challenge=1   # デッドロック
+go run cmd/runner/main.go -mode=solution -challenge=11  # バックプレッシャー
+go run cmd/runner/main.go -mode=solution -challenge=12  # 分散一貫性
+go run cmd/runner/main.go -mode=solution -challenge=13  # イベントソーシング
+go run cmd/runner/main.go -mode=solution -challenge=14  # Sagaパターン
+
+# チャレンジ15-16は解答作成中
 ```
 
 ### 自動評価
@@ -190,11 +203,12 @@ go-async-practice/
 ├── cmd/runner/         # CLIエントリーポイント
 ├── examples/           # 学習用例題（16パターン）
 ├── challenges/         # チャレンジ問題（16問）
-├── solutions/          # 解答例（全8問対応）
+├── solutions/          # 解答例（14問完全対応、Challenge 1-14）
 ├── practical/          # 実践的な例（Docker必須）
 ├── benchmarks/         # パフォーマンス測定
 ├── internal/evaluator/ # 自動評価システム
 ├── tests/              # 統合・E2Eテスト
+├── interactive/        # インタラクティブ学習（ゲーミフィケーション）
 └── docker-compose.yml  # Docker環境設定
 ```
 
@@ -204,19 +218,25 @@ go-async-practice/
 
 ```mermaid
 graph LR
-    A[基礎編 1-7] --> B[チャレンジ 1-2]
+    A[基礎編 1-7] --> B[チャレンジ 1-4]
     B --> C[応用編 8-11]
-    C --> D[チャレンジ 3-4]
+    C --> D[チャレンジ 5-8]
     D --> E[実践編 12-16]
-    E --> F[Docker実践]
+    E --> F[チャレンジ 9-14]
+    F --> G[Docker実践]
+    G --> H[チャレンジ 15-16]
 ```
 
 ### 段階的アプローチ
 
 1. **基礎を固める** - 例題1-7でGoroutineとChannelを理解
-2. **問題を解く** - チャレンジ1-2で理解度チェック
-3. **パターンを学ぶ** - 例題8-11で応用パターン習得
-4. **実践力を養う** - チャレンジ3-4とDocker環境で実装
+2. **基本問題** - チャレンジ1-4でデッドロック、レース条件に対処
+3. **応用パターン** - 例題8-11でWorker Pool、Pipeline等を習得
+4. **システム問題** - チャレンジ5-8でメモリ、セキュリティ、パフォーマンス最適化
+5. **実践編** - 例題12-16でCircuit Breaker、Pub/Sub等を実装
+6. **分散システム** - チャレンジ9-14で分散ロック、一貫性、イベントソーシング
+7. **Docker実践** - 各種データベース、メッセージングシステムとの統合
+8. **高度な課題** - チャレンジ15-16で分散キャッシュ、ストリーム処理に挑戦
 
 ## 🛠 開発環境
 

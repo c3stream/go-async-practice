@@ -1,7 +1,6 @@
 package solutions
 
 import (
-	"context"
 	"fmt"
 	"runtime"
 	"sync"
@@ -81,14 +80,14 @@ func solution1MinimizeLockContention() {
 	}
 
 	// 改善3: ロックフリーデータ構造
-	type LockFreeQueue struct {
-		head atomic.Pointer[node]
-		tail atomic.Pointer[node]
-	}
-
 	type node struct {
 		value int
 		next  atomic.Pointer[node]
+	}
+
+	type LockFreeQueue struct {
+		head atomic.Pointer[node]
+		tail atomic.Pointer[node]
 	}
 
 	queue := &LockFreeQueue{}
@@ -96,7 +95,7 @@ func solution1MinimizeLockContention() {
 	queue.head.Store(sentinel)
 	queue.tail.Store(sentinel)
 
-	enqueue := func(value int) {
+	_ = func(value int) {
 		newNode := &node{value: value}
 		for {
 			last := queue.tail.Load()
@@ -355,51 +354,52 @@ func solution3OptimizeGoroutinePool() {
 		mu          sync.Mutex
 	}
 
-	newDynamicPool := func(min, max int) *DynamicPool {
+	_ = func(min, max int) *DynamicPool {
 		pool := &DynamicPool{
 			minWorkers: min,
 			maxWorkers: max,
 			tasks:      make(chan Task, max*2),
 		}
 
-		// 最小ワーカー数を起動
-		for i := 0; i < min; i++ {
-			atomic.AddInt32(&pool.workerCount, 1)
-			go pool.worker()
-		}
+		var poolWorker func()
+		var poolMonitor func()
 
-		// 負荷監視
-		go pool.monitor()
-
-		return pool
-	}
-
-	(func(p *DynamicPool) {
-		p.worker = func() {
-			for task := range p.tasks {
+		poolWorker = func() {
+			for task := range pool.tasks {
 				task()
 			}
-			atomic.AddInt32(&p.workerCount, -1)
+			atomic.AddInt32(&pool.workerCount, -1)
 		}
 
-		p.monitor = func() {
+		poolMonitor = func() {
 			ticker := time.NewTicker(100 * time.Millisecond)
 			defer ticker.Stop()
 
 			for range ticker.C {
-				queueSize := len(p.tasks)
-				currentWorkers := atomic.LoadInt32(&p.workerCount)
+				queueSize := len(pool.tasks)
+				currentWorkers := atomic.LoadInt32(&pool.workerCount)
 
 				// スケールアップ
-				if queueSize > int(currentWorkers)*2 && currentWorkers < int32(p.maxWorkers) {
-					atomic.AddInt32(&p.workerCount, 1)
-					go p.worker()
+				if queueSize > int(currentWorkers)*2 && currentWorkers < int32(pool.maxWorkers) {
+					atomic.AddInt32(&pool.workerCount, 1)
+					go poolWorker()
 				}
 				// スケールダウン（簡略化）
 				// 実際の実装では、アイドルワーカーの管理が必要
 			}
 		}
-	})(nil) // メソッド定義のためのダミー呼び出し
+
+		// 最小ワーカー数を起動
+		for i := 0; i < min; i++ {
+			atomic.AddInt32(&pool.workerCount, 1)
+			go poolWorker()
+		}
+
+		// 負荷監視
+		go poolMonitor()
+
+		return pool
+	}
 
 	// テストタスク作成
 	createTasks := func(count int) []Task {

@@ -66,7 +66,7 @@ func solution1_VectorClock() {
 	}
 
 	// ベクタークロックの比較（a <= b）
-	isLessOrEqual := func(a, b VectorClock) bool {
+	_ = func(a, b VectorClock) bool {
 		for k, v := range a {
 			if v > b[k] {
 				return false
@@ -396,18 +396,18 @@ func solution3_SequenceNumberBuffer() {
 		Timestamp    time.Time
 	}
 
-	type OrderedBuffer struct {
-		mu            sync.RWMutex
-		buffers       map[string]*PartitionBuffer
-		deliveryChan  chan Message
-	}
-
 	type PartitionBuffer struct {
 		nextSeq      int64
 		pending      map[int64]Message
 		maxBufferSize int
 		lastDelivery time.Time
 		timeout      time.Duration
+	}
+
+	type OrderedBuffer struct {
+		mu            sync.RWMutex
+		buffers       map[string]*PartitionBuffer
+		deliveryChan  chan Message
 	}
 
 	// バッファ作成

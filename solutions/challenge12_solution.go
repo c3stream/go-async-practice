@@ -1,7 +1,6 @@
 package solutions
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -176,12 +175,8 @@ func solution1_TwoPhaseCommit() {
 
 	// 一貫性確認
 	fmt.Println("\n一貫性チェック:")
-	var firstData map[string]interface{}
-	for i, p := range coordinator.participants {
+	for _, p := range coordinator.participants {
 		p.mu.RLock()
-		if i == 0 {
-			firstData = p.data
-		}
 		fmt.Printf("  %s: %v\n", p.ID, p.data)
 		p.mu.RUnlock()
 	}
