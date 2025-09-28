@@ -107,6 +107,298 @@ func (c *CassandraNoSQL) initializeSchema() error {
 	return nil
 }
 
+// AdvancedTimeSeriesPatterns - 高度な時系列パターン
+func (c *CassandraNoSQL) AdvancedTimeSeriesPatterns(ctx context.Context) {
+	fmt.Println("\n🕐 Cassandra 高度な時系列パターン")
+	fmt.Println("=" + repeatString("=", 50))
+
+	if c.session == nil {
+		c.runAdvancedDemoMode(ctx)
+		return
+	}
+
+	// 必要なテーブルを作成
+	c.createAdvancedSchemas()
+
+	// 1. ローリングウィンドウ集計
+	go c.rollingWindowAggregation(ctx)
+
+	// 2. 時系列ダウンサンプリング
+	go c.timeSeriesDownsampling(ctx)
+
+	// 3. 異常検知
+	go c.anomalyDetection(ctx)
+
+	// 4. データ老朽化（TTL）管理
+	go c.dataLifecycleManagement(ctx)
+
+	select {
+	case <-ctx.Done():
+	case <-time.After(20 * time.Second):
+	}
+}
+
+// createAdvancedSchemas - 高度パターン用のスキーマ作成
+func (c *CassandraNoSQL) createAdvancedSchemas() {
+	schemas := []string{
+		// ダウンサンプリング結果保存用
+		`CREATE TABLE IF NOT EXISTS async_practice.downsampled_data (
+			bucket_time timestamp,
+			interval_type text,
+			sensor_id text,
+			avg_value double,
+			min_value double,
+			max_value double,
+			count bigint,
+			PRIMARY KEY ((interval_type, sensor_id), bucket_time)
+		) WITH CLUSTERING ORDER BY (bucket_time DESC)`,
+
+		// 異常検知結果保存用
+		`CREATE TABLE IF NOT EXISTS async_practice.anomalies (
+			detection_time timestamp,
+			sensor_id text,
+			anomaly_type text,
+			value double,
+			threshold double,
+			severity text,
+			PRIMARY KEY (sensor_id, detection_time)
+		) WITH CLUSTERING ORDER BY (detection_time DESC)`,
+	}
+
+	for _, schema := range schemas {
+		c.session.Query(schema).Exec()
+	}
+}
+
+// rollingWindowAggregation - ローリングウィンドウ集計
+func (c *CassandraNoSQL) rollingWindowAggregation(ctx context.Context) {
+	fmt.Println("\n📊 ローリングウィンドウ集計")
+
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			now := time.Now()
+			windowEnd := now.Truncate(5 * time.Minute)
+			windowStart := windowEnd.Add(-5 * time.Minute)
+
+			var wg sync.WaitGroup
+			aggregations := []struct {
+				name  string
+				query string
+			}{
+				{
+					name: "平均値",
+					query: fmt.Sprintf(`
+						SELECT sensor_id, AVG(value) as avg_value, COUNT(*) as count
+						FROM async_practice.timeseries
+						WHERE partition_key = 'sensors'
+						AND timestamp >= '%s'
+						AND timestamp < '%s'
+						GROUP BY sensor_id
+						ALLOW FILTERING`,
+						windowStart.Format(time.RFC3339),
+						windowEnd.Format(time.RFC3339)),
+				},
+			}
+
+			fmt.Printf("  🔍 ウィンドウ集計 %s - %s:\n",
+				windowStart.Format("15:04:05"), windowEnd.Format("15:04:05"))
+
+			for _, agg := range aggregations {
+				wg.Add(1)
+				go func(name, query string) {
+					defer wg.Done()
+					iter := c.session.Query(query).Iter()
+					count := 0
+					m := make(map[string]interface{})
+
+					for iter.MapScan(m) {
+						count++
+						m = make(map[string]interface{})
+					}
+
+					if err := iter.Close(); err == nil {
+						fmt.Printf("    %s: %d センサーの結果\n", name, count)
+					}
+				}(agg.name, agg.query)
+			}
+			wg.Wait()
+		}
+	}
+}
+
+// timeSeriesDownsampling - 時系列ダウンサンプリング
+func (c *CassandraNoSQL) timeSeriesDownsampling(ctx context.Context) {
+	fmt.Println("\n⬇️ 時系列ダウンサンプリング")
+
+	ticker := time.NewTicker(45 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			intervals := []struct {
+				name     string
+				duration time.Duration
+			}{
+				{"1分間隔", 1 * time.Minute},
+				{"5分間隔", 5 * time.Minute},
+			}
+
+			var wg sync.WaitGroup
+			for _, interval := range intervals {
+				wg.Add(1)
+				go func(name string, duration time.Duration) {
+					defer wg.Done()
+
+					now := time.Now()
+					bucketEnd := now.Truncate(duration)
+					bucketStart := bucketEnd.Add(-duration)
+
+					query := fmt.Sprintf(`
+						SELECT sensor_id, COUNT(*) as count
+						FROM async_practice.timeseries
+						WHERE partition_key = 'sensors'
+						AND timestamp >= '%s'
+						AND timestamp < '%s'
+						GROUP BY sensor_id
+						ALLOW FILTERING`,
+						bucketStart.Format(time.RFC3339),
+						bucketEnd.Format(time.RFC3339))
+
+					iter := c.session.Query(query).Iter()
+					count := 0
+					m := make(map[string]interface{})
+
+					for iter.MapScan(m) {
+						count++
+						m = make(map[string]interface{})
+					}
+
+					if err := iter.Close(); err == nil {
+						fmt.Printf("  📉 %s: %d センサーを集約\n", name, count)
+					}
+				}(interval.name, interval.duration)
+			}
+			wg.Wait()
+		}
+	}
+}
+
+// anomalyDetection - 異常検知
+func (c *CassandraNoSQL) anomalyDetection(ctx context.Context) {
+	fmt.Println("\n🚨 リアルタイム異常検知")
+
+	ticker := time.NewTicker(20 * time.Second)
+	defer ticker.Stop()
+
+	thresholds := map[string]float64{
+		"sensor_0": 500.0,
+		"sensor_1": 450.0,
+		"sensor_2": 600.0,
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			var wg sync.WaitGroup
+
+			for sensorID, threshold := range thresholds {
+				wg.Add(1)
+				go func(sensor string, limit float64) {
+					defer wg.Done()
+
+					query := `
+						SELECT timestamp, value
+						FROM async_practice.timeseries_by_sensor
+						WHERE sensor_id = ?
+						ORDER BY timestamp DESC
+						LIMIT 10`
+
+					iter := c.session.Query(query, sensor).Iter()
+					var values []float64
+					var timestamp time.Time
+					var value float64
+
+					for iter.Scan(&timestamp, &value) {
+						values = append(values, value)
+					}
+
+					if err := iter.Close(); err == nil && len(values) > 0 {
+						latestValue := values[0]
+						if latestValue > limit {
+							fmt.Printf("  🚨 %s: 閾値超過 %.2f > %.2f\n", sensor, latestValue, limit)
+						} else {
+							fmt.Printf("  ✅ %s: 正常 %.2f\n", sensor, latestValue)
+						}
+					}
+				}(sensorID, threshold)
+			}
+			wg.Wait()
+		}
+	}
+}
+
+// dataLifecycleManagement - データライフサイクル管理
+func (c *CassandraNoSQL) dataLifecycleManagement(ctx context.Context) {
+	fmt.Println("\n🗂️ データライフサイクル管理")
+
+	ticker := time.NewTicker(60 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			fmt.Println("  📊 データ老朽化分析:")
+
+			cutoffTime := time.Now().Add(-24 * time.Hour)
+			query := `
+				SELECT COUNT(*) as old_count
+				FROM async_practice.timeseries
+				WHERE partition_key = 'sensors'
+				AND timestamp < ?
+				ALLOW FILTERING`
+
+			var oldCount int64
+			if err := c.session.Query(query, cutoffTime).Scan(&oldCount); err == nil {
+				fmt.Printf("    24時間以上前のデータ: %d件\n", oldCount)
+			}
+
+			fmt.Println("    TTL設定により自動削除される予定のデータを確認")
+		}
+	}
+}
+
+// runAdvancedDemoMode - 高度パターンのデモモード
+func (c *CassandraNoSQL) runAdvancedDemoMode(ctx context.Context) {
+	fmt.Println("  ⚠ Cassandra未接続: 高度パターンデモモード")
+
+	demoPatterns := []string{
+		"ローリングウィンドウ集計 (5分間隔)",
+		"時系列ダウンサンプリング (1分→5分)",
+		"異常検知 (閾値ベース)",
+		"データライフサイクル管理 (TTL + 分析)",
+	}
+
+	for i, pattern := range demoPatterns {
+		time.Sleep(2 * time.Second)
+		fmt.Printf("  📊 パターン%d: %s - ✅ デモ完了\n", i+1, pattern)
+	}
+
+	fmt.Println("  ✅ 高度時系列パターンデモ完了")
+}
+
 // TimeSeriesIngestion - タイムシリーズデータの並列取り込み
 func (c *CassandraNoSQL) TimeSeriesIngestion(ctx context.Context) {
 	fmt.Println("\n🗄 Cassandra タイムシリーズ取り込みデモ")

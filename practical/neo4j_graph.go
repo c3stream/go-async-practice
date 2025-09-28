@@ -554,6 +554,709 @@ func (n *Neo4jGraph) simulateRecommendations() {
 	}
 }
 
+// AdvancedGraphProcessing - 高度なグラフ処理パターン
+func (n *Neo4jGraph) AdvancedGraphProcessing(ctx context.Context) {
+	fmt.Println("\n🚀 Neo4j: 高度なグラフ処理パターン")
+	fmt.Println("=" + repeatString("=", 50))
+
+	if n.driver == nil {
+		n.runAdvancedDemoMode(ctx)
+		return
+	}
+
+	// 並行して複数のグラフアルゴリズムを実行
+	n.concurrentGraphAlgorithms(ctx)
+
+	// リアルタイムグラフ分析
+	n.realtimeGraphAnalysis(ctx)
+
+	// 分散グラフ処理
+	n.distributedGraphProcessing(ctx)
+
+	// スケーラブルクエリ実行
+	n.scalableQueryExecution(ctx)
+}
+
+// concurrentGraphAlgorithms - 並行グラフアルゴリズム
+func (n *Neo4jGraph) concurrentGraphAlgorithms(ctx context.Context) {
+	fmt.Println("\n⚡ 並行グラフアルゴリズム実行")
+
+	type AlgorithmResult struct {
+		Name     string      `json:"name"`
+		Duration time.Duration `json:"duration"`
+		Result   interface{} `json:"result"`
+		Error    error       `json:"error"`
+	}
+
+	algorithms := []struct {
+		name  string
+		query string
+		desc  string
+	}{
+		{
+			name: "中心性計算",
+			desc: "ネットワーク内の中心的なノードを特定",
+			query: `
+				MATCH (u:User)
+				OPTIONAL MATCH (u)-[:FOLLOWS]->(following)
+				OPTIONAL MATCH (u)<-[:FOLLOWS]-(follower)
+				WITH u, COUNT(DISTINCT following) as out_degree,
+				        COUNT(DISTINCT follower) as in_degree
+				RETURN u.id, u.name,
+				       out_degree, in_degree,
+				       (out_degree + in_degree) as total_degree
+				ORDER BY total_degree DESC
+				LIMIT 10
+			`,
+		},
+		{
+			name: "クラスタリング分析",
+			desc: "密接に接続されたノードグループを発見",
+			query: `
+				MATCH (u1:User)-[:FOLLOWS]->(u2:User)-[:FOLLOWS]->(u3:User)
+				WHERE (u3)-[:FOLLOWS]->(u1)
+				RETURN u1.id, u2.id, u3.id, 'triangle' as cluster_type
+				LIMIT 20
+			`,
+		},
+		{
+			name: "影響伝播分析",
+			desc: "情報やコンテンツの拡散パターンを分析",
+			query: `
+				MATCH (source:User)-[:POSTED]->(p:Post)
+				MATCH (source)-[:FOLLOWS*1..3]->(reached:User)
+				WITH p, source, COUNT(DISTINCT reached) as potential_reach,
+				     AVG(p.likes) as avg_likes
+				WHERE potential_reach > 5
+				RETURN p.id, source.id, potential_reach, avg_likes
+				ORDER BY potential_reach DESC, avg_likes DESC
+				LIMIT 15
+			`,
+		},
+		{
+			name: "コミュニティ検出",
+			desc: "強い結束を持つユーザーコミュニティを特定",
+			query: `
+				MATCH (u1:User)-[:FOLLOWS]-(u2:User)
+				WHERE (u1)-[:FOLLOWS]-(u2) AND (u2)-[:FOLLOWS]-(u1)
+				OPTIONAL MATCH (u1)-[:FOLLOWS]-(common:User)-[:FOLLOWS]-(u2)
+				WITH u1, u2, COUNT(DISTINCT common) as mutual_connections
+				RETURN u1.id, u2.id, mutual_connections
+				ORDER BY mutual_connections DESC
+				LIMIT 10
+			`,
+		},
+		{
+			name: "パス多様性解析",
+			desc: "ノード間の複数経路の存在と多様性を分析",
+			query: `
+				MATCH (start:User {id: 'user_0_0'})
+				MATCH (end:User {id: 'user_2_3'})
+				MATCH paths = (start)-[:FOLLOWS*2..4]-(end)
+				WITH paths, length(paths) as path_length
+				RETURN path_length, COUNT(paths) as path_count
+				ORDER BY path_length
+			`,
+		},
+	}
+
+	results := make(chan AlgorithmResult, len(algorithms))
+	var wg sync.WaitGroup
+
+	// 各アルゴリズムを並行実行
+	for _, algo := range algorithms {
+		wg.Add(1)
+		go func(name, query, desc string) {
+			defer wg.Done()
+
+			start := time.Now()
+			session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+				AccessMode: neo4j.AccessModeRead,
+			})
+			defer session.Close(ctx)
+
+			result, err := session.Run(ctx, query, nil)
+			duration := time.Since(start)
+
+			var data []map[string]interface{}
+			if err == nil {
+				for result.Next(ctx) {
+					record := result.Record()
+					recordMap := make(map[string]interface{})
+					for i, key := range record.Keys {
+						recordMap[key] = record.Values[i]
+					}
+					data = append(data, recordMap)
+				}
+			}
+
+			results <- AlgorithmResult{
+				Name:     name,
+				Duration: duration,
+				Result:   data,
+				Error:    err,
+			}
+		}(algo.name, algo.query, algo.desc)
+	}
+
+	// 結果収集
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	// 結果表示
+	for result := range results {
+		fmt.Printf("\n  📊 %s:\n", result.Name)
+		fmt.Printf("    実行時間: %v\n", result.Duration)
+
+		if result.Error != nil {
+			fmt.Printf("    エラー: %v\n", result.Error)
+			continue
+		}
+
+		if data, ok := result.Result.([]map[string]interface{}); ok {
+			fmt.Printf("    結果数: %d件\n", len(data))
+			for i, record := range data {
+				if i >= 3 { // 最初の3件のみ表示
+					break
+				}
+				fmt.Printf("    [%d] %v\n", i+1, record)
+			}
+		}
+	}
+}
+
+// realtimeGraphAnalysis - リアルタイムグラフ分析
+func (n *Neo4jGraph) realtimeGraphAnalysis(ctx context.Context) {
+	fmt.Println("\n📡 リアルタイムグラフ分析")
+
+	var (
+		updateCount   int64
+		analyzeCount  int64
+		alertCount    int64
+		wg           sync.WaitGroup
+	)
+
+	// データ更新ストリーム
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+			AccessMode: neo4j.AccessModeWrite,
+		})
+		defer session.Close(ctx)
+
+		for i := 0; i < 50; i++ {
+			// ランダムなユーザー間でフォロー関係を作成
+			fromUser := fmt.Sprintf("user_%d_%d", i%3, i%10)
+			toUser := fmt.Sprintf("user_%d_%d", (i+1)%3, (i+2)%10)
+
+			_, err := session.Run(ctx, `
+				MATCH (u1:User {id: $from_user})
+				MATCH (u2:User {id: $to_user})
+				MERGE (u1)-[:FOLLOWS]->(u2)
+				SET u2.follower_count = COALESCE(u2.follower_count, 0) + 1
+				RETURN u1.id, u2.id
+			`, map[string]interface{}{
+				"from_user": fromUser,
+				"to_user":   toUser,
+			})
+
+			if err == nil {
+				atomic.AddInt64(&updateCount, 1)
+			}
+
+			time.Sleep(20 * time.Millisecond)
+		}
+	}()
+
+	// リアルタイム分析エンジン
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+			AccessMode: neo4j.AccessModeRead,
+		})
+		defer session.Close(ctx)
+
+		ticker := time.NewTicker(200 * time.Millisecond)
+		defer ticker.Stop()
+
+		for i := 0; i < 10; i++ {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				// 影響力の急激な変化を検出
+				result, err := session.Run(ctx, `
+					MATCH (u:User)
+					WHERE u.follower_count > 15
+					RETURN u.id, u.name, u.follower_count
+					ORDER BY u.follower_count DESC
+					LIMIT 3
+				`, nil)
+
+				if err == nil {
+					hasInfluencer := false
+					for result.Next(ctx) {
+						record := result.Record()
+						if count, ok := record.Get("u.follower_count"); ok {
+							if cnt, ok := count.(int64); ok && cnt > 20 {
+								hasInfluencer = true
+								atomic.AddInt64(&alertCount, 1)
+							}
+						}
+					}
+
+					if hasInfluencer {
+						fmt.Printf("    🚨 高影響力ユーザー検出 (時刻: %s)\n",
+							time.Now().Format("15:04:05"))
+					}
+
+					atomic.AddInt64(&analyzeCount, 1)
+				}
+			}
+		}
+	}()
+
+	// 異常検出エンジン
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+			AccessMode: neo4j.AccessModeRead,
+		})
+		defer session.Close(ctx)
+
+		ticker := time.NewTicker(300 * time.Millisecond)
+		defer ticker.Stop()
+
+		for i := 0; i < 8; i++ {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				// スパムやボットの検出
+				result, err := session.Run(ctx, `
+					MATCH (u:User)-[:FOLLOWS]->(target:User)
+					WITH target, COUNT(u) as new_followers
+					WHERE new_followers > 5
+					RETURN target.id, target.name, new_followers
+					ORDER BY new_followers DESC
+					LIMIT 1
+				`, nil)
+
+				if err == nil && result.Next(ctx) {
+					record := result.Record()
+					fmt.Printf("    ⚠️  急激なフォロワー増加: %v (%v新規)\n",
+						record.Values[0], record.Values[2])
+					atomic.AddInt64(&alertCount, 1)
+				}
+			}
+		}
+	}()
+
+	wg.Wait()
+
+	fmt.Printf("\n  📈 リアルタイム分析統計:\n")
+	fmt.Printf("    更新処理: %d件\n", updateCount)
+	fmt.Printf("    分析実行: %d回\n", analyzeCount)
+	fmt.Printf("    アラート: %d件\n", alertCount)
+}
+
+// distributedGraphProcessing - 分散グラフ処理
+func (n *Neo4jGraph) distributedGraphProcessing(ctx context.Context) {
+	fmt.Println("\n🌐 分散グラフ処理パターン")
+
+	type PartitionResult struct {
+		PartitionID string      `json:"partition_id"`
+		NodeCount   int64       `json:"node_count"`
+		EdgeCount   int64       `json:"edge_count"`
+		ProcessTime time.Duration `json:"process_time"`
+		Error       error       `json:"error"`
+	}
+
+	// グラフをパーティションに分割して並行処理
+	partitions := []string{"partition_0", "partition_1", "partition_2"}
+	results := make(chan PartitionResult, len(partitions))
+	var wg sync.WaitGroup
+
+	for _, partition := range partitions {
+		wg.Add(1)
+		go func(partID string) {
+			defer wg.Done()
+
+			start := time.Now()
+			session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+				AccessMode: neo4j.AccessModeRead,
+			})
+			defer session.Close(ctx)
+
+			// パーティション別のノード数取得
+			nodeResult, err := session.Run(ctx, `
+				MATCH (u:User)
+				WHERE u.id STARTS WITH $prefix
+				RETURN COUNT(u) as node_count
+			`, map[string]interface{}{
+				"prefix": "user_" + string(partID[len(partID)-1]) + "_",
+			})
+
+			var nodeCount, edgeCount int64
+			if err == nil && nodeResult.Next(ctx) {
+				if count, ok := nodeResult.Record().Get("node_count"); ok {
+					nodeCount = count.(int64)
+				}
+			}
+
+			// パーティション別のエッジ数取得
+			edgeResult, err := session.Run(ctx, `
+				MATCH (u1:User)-[r:FOLLOWS]->(u2:User)
+				WHERE u1.id STARTS WITH $prefix AND u2.id STARTS WITH $prefix
+				RETURN COUNT(r) as edge_count
+			`, map[string]interface{}{
+				"prefix": "user_" + string(partID[len(partID)-1]) + "_",
+			})
+
+			if err == nil && edgeResult.Next(ctx) {
+				if count, ok := edgeResult.Record().Get("edge_count"); ok {
+					edgeCount = count.(int64)
+				}
+			}
+
+			results <- PartitionResult{
+				PartitionID: partID,
+				NodeCount:   nodeCount,
+				EdgeCount:   edgeCount,
+				ProcessTime: time.Since(start),
+				Error:       err,
+			}
+		}(partition)
+	}
+
+	// 結果収集
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	var totalNodes, totalEdges int64
+	var totalTime time.Duration
+
+	fmt.Println("  📊 パーティション別処理結果:")
+	for result := range results {
+		fmt.Printf("    %s: %d nodes, %d edges (%v)\n",
+			result.PartitionID, result.NodeCount, result.EdgeCount, result.ProcessTime)
+
+		if result.Error == nil {
+			totalNodes += result.NodeCount
+			totalEdges += result.EdgeCount
+			if result.ProcessTime > totalTime {
+				totalTime = result.ProcessTime
+			}
+		}
+	}
+
+	fmt.Printf("\n  🎯 分散処理サマリー:\n")
+	fmt.Printf("    総ノード数: %d\n", totalNodes)
+	fmt.Printf("    総エッジ数: %d\n", totalEdges)
+	fmt.Printf("    最大処理時間: %v\n", totalTime)
+}
+
+// scalableQueryExecution - スケーラブルクエリ実行
+func (n *Neo4jGraph) scalableQueryExecution(ctx context.Context) {
+	fmt.Println("\n⚡ スケーラブルクエリ実行パターン")
+
+	type QueryJob struct {
+		ID          int         `json:"id"`
+		Query       string      `json:"query"`
+		Parameters  map[string]interface{} `json:"parameters"`
+		Priority    int         `json:"priority"`
+	}
+
+	type QueryResult struct {
+		JobID       int           `json:"job_id"`
+		Duration    time.Duration `json:"duration"`
+		ResultCount int           `json:"result_count"`
+		Error       error         `json:"error"`
+	}
+
+	// クエリジョブキューの作成
+	jobQueue := make(chan QueryJob, 100)
+	resultQueue := make(chan QueryResult, 100)
+
+	// 複数のワーカーでクエリを並行実行
+	numWorkers := 4
+	var wg sync.WaitGroup
+
+	// ワーカー起動
+	for w := 0; w < numWorkers; w++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+
+			session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+				AccessMode: neo4j.AccessModeRead,
+			})
+			defer session.Close(ctx)
+
+			for job := range jobQueue {
+				start := time.Now()
+
+				result, err := session.Run(ctx, job.Query, job.Parameters)
+				duration := time.Since(start)
+
+				resultCount := 0
+				if err == nil {
+					for result.Next(ctx) {
+						resultCount++
+					}
+				}
+
+				resultQueue <- QueryResult{
+					JobID:       job.ID,
+					Duration:    duration,
+					ResultCount: resultCount,
+					Error:       err,
+				}
+
+				fmt.Printf("    Worker%d: Job%d 完了 (%v)\n",
+					workerID, job.ID, duration)
+			}
+		}(w)
+	}
+
+	// クエリジョブを生成
+	go func() {
+		defer close(jobQueue)
+
+		queries := []struct {
+			query      string
+			parameters map[string]interface{}
+			priority   int
+		}{
+			{
+				query: "MATCH (u:User) WHERE u.id STARTS WITH $prefix RETURN COUNT(u) as count",
+				parameters: map[string]interface{}{"prefix": "user_0"},
+				priority: 1,
+			},
+			{
+				query: "MATCH (u:User)-[:FOLLOWS*2]-(other:User) WHERE u.id = $user_id RETURN COUNT(DISTINCT other) as two_hop_neighbors",
+				parameters: map[string]interface{}{"user_id": "user_0_0"},
+				priority: 2,
+			},
+			{
+				query: "MATCH (p:Post) WHERE p.likes > $min_likes RETURN COUNT(p) as popular_posts",
+				parameters: map[string]interface{}{"min_likes": 100},
+				priority: 1,
+			},
+			{
+				query: "MATCH (u:User)-[:POSTED]->(p:Post)<-[:LIKED]-(liker:User) RETURN u.id, COUNT(DISTINCT liker) as total_likes ORDER BY total_likes DESC LIMIT $limit",
+				parameters: map[string]interface{}{"limit": 10},
+				priority: 3,
+			},
+			{
+				query: "MATCH (u1:User)-[:FOLLOWS]->(u2:User)-[:FOLLOWS]->(u3:User) WHERE u1.id STARTS WITH $prefix RETURN COUNT(*) as triangles",
+				parameters: map[string]interface{}{"prefix": "user_1"},
+				priority: 2,
+			},
+		}
+
+		for i, q := range queries {
+			jobQueue <- QueryJob{
+				ID:         i + 1,
+				Query:      q.query,
+				Parameters: q.parameters,
+				Priority:   q.priority,
+			}
+		}
+	}()
+
+	// 結果収集
+	go func() {
+		wg.Wait()
+		close(resultQueue)
+	}()
+
+	var totalJobs int
+	var totalDuration time.Duration
+	var errors int
+
+	fmt.Println("  📊 クエリ実行結果:")
+	for result := range resultQueue {
+		totalJobs++
+		totalDuration += result.Duration
+
+		if result.Error != nil {
+			errors++
+			fmt.Printf("    Job%d: エラー - %v\n", result.JobID, result.Error)
+		} else {
+			fmt.Printf("    Job%d: %d件の結果 (%v)\n",
+				result.JobID, result.ResultCount, result.Duration)
+		}
+	}
+
+	if totalJobs > 0 {
+		fmt.Printf("\n  🎯 スケーラブル実行統計:\n")
+		fmt.Printf("    総ジョブ数: %d\n", totalJobs)
+		fmt.Printf("    平均実行時間: %v\n", totalDuration/time.Duration(totalJobs))
+		fmt.Printf("    エラー数: %d\n", errors)
+		fmt.Printf("    成功率: %.1f%%\n", float64(totalJobs-errors)/float64(totalJobs)*100)
+	}
+}
+
+// runAdvancedDemoMode - 高度なデモモード
+func (n *Neo4jGraph) runAdvancedDemoMode(ctx context.Context) {
+	fmt.Println("\n🎭 高度なデモモード: グラフアルゴリズムシミュレーション")
+
+	type SimulatedGraph struct {
+		mu           sync.RWMutex
+		nodes        map[string]map[string]interface{}
+		adjacencies  map[string][]string
+		weights      map[string]map[string]float64
+	}
+
+	graph := &SimulatedGraph{
+		nodes:       make(map[string]map[string]interface{}),
+		adjacencies: make(map[string][]string),
+		weights:     make(map[string]map[string]float64),
+	}
+
+	// 並行でグラフ構造を生成
+	var wg sync.WaitGroup
+	numPartitions := 4
+
+	for p := 0; p < numPartitions; p++ {
+		wg.Add(1)
+		go func(partitionID int) {
+			defer wg.Done()
+
+			nodesPerPartition := 25
+			for i := 0; i < nodesPerPartition; i++ {
+				nodeID := fmt.Sprintf("node_%d_%d", partitionID, i)
+
+				graph.mu.Lock()
+
+				// ノード作成
+				graph.nodes[nodeID] = map[string]interface{}{
+					"type":      "user",
+					"partition": partitionID,
+					"degree":    0,
+					"influence": float64(partitionID*25 + i),
+				}
+
+				// エッジ作成（隣接ノードとの接続）
+				if i > 0 {
+					prevID := fmt.Sprintf("node_%d_%d", partitionID, i-1)
+					graph.adjacencies[nodeID] = append(graph.adjacencies[nodeID], prevID)
+					graph.adjacencies[prevID] = append(graph.adjacencies[prevID], nodeID)
+
+					// 重み設定
+					if graph.weights[nodeID] == nil {
+						graph.weights[nodeID] = make(map[string]float64)
+					}
+					if graph.weights[prevID] == nil {
+						graph.weights[prevID] = make(map[string]float64)
+					}
+
+					weight := float64(i) * 0.1
+					graph.weights[nodeID][prevID] = weight
+					graph.weights[prevID][nodeID] = weight
+				}
+
+				// パーティション間接続
+				if partitionID > 0 && i == 0 {
+					crossPartitionID := fmt.Sprintf("node_%d_0", partitionID-1)
+					graph.adjacencies[nodeID] = append(graph.adjacencies[nodeID], crossPartitionID)
+
+					if graph.weights[nodeID] == nil {
+						graph.weights[nodeID] = make(map[string]float64)
+					}
+					graph.weights[nodeID][crossPartitionID] = 1.0
+				}
+
+				graph.mu.Unlock()
+			}
+
+			fmt.Printf("  Partition %d: %d ノード生成完了\n", partitionID, nodesPerPartition)
+		}(p)
+	}
+
+	wg.Wait()
+
+	// グラフ統計を並行計算
+	statsChan := make(chan map[string]interface{}, 3)
+
+	// ノード統計
+	go func() {
+		graph.mu.RLock()
+		nodeCount := len(graph.nodes)
+		graph.mu.RUnlock()
+
+		statsChan <- map[string]interface{}{
+			"type":  "nodes",
+			"count": nodeCount,
+		}
+	}()
+
+	// エッジ統計
+	go func() {
+		graph.mu.RLock()
+		edgeCount := 0
+		for _, adj := range graph.adjacencies {
+			edgeCount += len(adj)
+		}
+		graph.mu.RUnlock()
+
+		statsChan <- map[string]interface{}{
+			"type":  "edges",
+			"count": edgeCount / 2, // 無向グラフなので半分
+		}
+	}()
+
+	// 最大次数計算
+	go func() {
+		graph.mu.RLock()
+		maxDegree := 0
+		maxDegreeNode := ""
+
+		for nodeID, adj := range graph.adjacencies {
+			degree := len(adj)
+			if degree > maxDegree {
+				maxDegree = degree
+				maxDegreeNode = nodeID
+			}
+		}
+		graph.mu.RUnlock()
+
+		statsChan <- map[string]interface{}{
+			"type":     "max_degree",
+			"node":     maxDegreeNode,
+			"degree":   maxDegree,
+		}
+	}()
+
+	// 統計結果収集
+	fmt.Println("\n  📊 グラフ統計:")
+	for i := 0; i < 3; i++ {
+		stat := <-statsChan
+		switch stat["type"] {
+		case "nodes":
+			fmt.Printf("    総ノード数: %v\n", stat["count"])
+		case "edges":
+			fmt.Printf("    総エッジ数: %v\n", stat["count"])
+		case "max_degree":
+			fmt.Printf("    最大次数: %v (ノード: %v)\n", stat["degree"], stat["node"])
+		}
+	}
+
+	close(statsChan)
+	fmt.Println("  ✅ 高度なグラフ処理デモ完了")
+}
+
 // Close - リソースクリーンアップ
 func (n *Neo4jGraph) Close(ctx context.Context) error {
 	if n.driver != nil {
