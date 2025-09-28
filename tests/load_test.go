@@ -3,7 +3,9 @@ package tests
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/rand"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -368,8 +370,9 @@ func TestCascadingFailure(t *testing.T) {
 		},
 	}
 
-	// サービスヘルスチェック
-	checkHealth := func(name string, visited map[string]bool) bool {
+	// サービスヘルスチェック（再帰関数のための前方宣言）
+	var checkHealth func(name string, visited map[string]bool) bool
+	checkHealth = func(name string, visited map[string]bool) bool {
 		if visited[name] {
 			return false // 循環依存検出
 		}

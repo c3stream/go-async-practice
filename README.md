@@ -74,18 +74,21 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Challenge 15: 分散キャッシュの問題
 - Challenge 16: ストリーム処理の問題
 
-### 3. Solutions（解答例）- 14問完全対応（1-14）
-各チャレンジの複数の解法を提示：
-- 各問題に対して2-4パターンの解法
+### 3. Solutions（解答例）- ✅ 16問完全対応（1-16）
+全てのチャレンジに複数の解法を提供：
+- 各問題に対し3パターンの解法
 - ベストプラクティスの解説付き
 - パフォーマンス比較データ込み
 
-**最新追加（9-14）**：
+**完全対応内容**：
+- Challenge 1-8: 基礎問題（デッドロック、レース、リーク、セキュリティ、パフォーマンス）
 - Challenge 9-10: 分散ロック、メッセージ順序保証
 - Challenge 11: バックプレッシャー処理（プル型、トークンバケット、アダプティブ）
 - Challenge 12: 分散一貫性（2PC、Saga、Event Sourcing + CQRS）
 - Challenge 13: イベントソーシング（Snapshot、CQRS、Versioning）
 - Challenge 14: Sagaパターン（Compensating、Orchestration、Choreography）
+- Challenge 15: 分散キャッシュ（Singleflight、Hot key処理、Write-through）
+- Challenge 16: ストリーム処理（Window管理、Watermark、Checkpoint/Recovery）
 
 ### 4. Benchmarks（ベンチマーク）
 パフォーマンス特性を理解：
@@ -129,15 +132,15 @@ go run cmd/runner/main.go -mode=challenge -challenge=13  # イベントソーシ
 
 # challenges/challenge0X_*.go を編集して修正
 
-# 解答例を確認（1-14完全対応）
+# 解答例を確認（✅ 1-16全て対応済み）
 go run cmd/runner/main.go -mode=solution -challenge=1   # デッドロック
 go run cmd/runner/main.go -mode=solution -challenge=8   # パフォーマンス改善
 go run cmd/runner/main.go -mode=solution -challenge=11  # バックプレッシャー
 go run cmd/runner/main.go -mode=solution -challenge=12  # 分散一貫性
 go run cmd/runner/main.go -mode=solution -challenge=13  # イベントソーシング
 go run cmd/runner/main.go -mode=solution -challenge=14  # Sagaパターン
-
-# チャレンジ15-16は解答作成中
+go run cmd/runner/main.go -mode=solution -challenge=15  # 分散キャッシュ
+go run cmd/runner/main.go -mode=solution -challenge=16  # ストリーム処理
 ```
 
 ### ベンチマークを実行
