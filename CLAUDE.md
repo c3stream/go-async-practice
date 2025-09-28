@@ -8,8 +8,16 @@ This is a comprehensive Go learning environment for parallel, concurrent, and as
 ## Project Structure
 ```
 ├── examples/          # 16 learning examples (basic + advanced patterns)
-├── challenges/        # 4 challenges with problematic code to fix
-├── solutions/         # Multiple solutions for each challenge
+├── challenges/        # 8 challenges with problematic code to fix
+│   ├── challenge01_deadlock.go     # Deadlock issues
+│   ├── challenge02_race.go         # Race conditions
+│   ├── challenge03_goroutine_leak.go # Goroutine leaks
+│   ├── challenge04_rate_limiter.go  # Rate limiting
+│   ├── challenge05_memory_leak.go   # Memory leaks
+│   ├── challenge06_resource_leak.go # Resource leaks
+│   ├── challenge07_security.go     # Security issues
+│   └── challenge08_performance.go  # Performance problems
+├── solutions/         # Multiple solutions for all 8 challenges
 ├── benchmarks/        # Performance benchmarks
 ├── practical/         # Real-world examples with external services
 │   ├── rabbitmq_example.go  # Message queue patterns
@@ -68,9 +76,10 @@ go run cmd/runner/main.go -mode=example -example=1
 # Interactive exercises
 go run cmd/runner/main.go -mode=interactive
 
-# Challenges & solutions
-go run cmd/runner/main.go -mode=challenge -challenge=1
-go run cmd/runner/main.go -mode=solution -challenge=1
+# Challenges (1-8) & solutions
+go run cmd/runner/main.go -mode=challenge -challenge=1  # Deadlock
+go run cmd/runner/main.go -mode=challenge -challenge=5  # Memory leak
+go run cmd/runner/main.go -mode=solution -challenge=8   # Performance solution
 ```
 
 ### Testing and Quality
@@ -91,13 +100,24 @@ make fmt
 2. **Channel Patterns**: Buffered/Unbuffered, Select, Non-blocking
 3. **Synchronization**: Context cancellation, Timeouts, Deadlock prevention
 4. **Advanced Patterns**: Worker pools, Pipeline, Fan-in/Fan-out, Semaphore
-5. **Common Issues**: Race conditions, Goroutine leaks, Deadlocks
+5. **Common Issues**: Race conditions, Goroutine leaks, Deadlocks, Memory leaks
+6. **Security**: Timing attacks, Resource exhaustion, Secure random generation
+7. **Performance**: Lock contention, Channel buffering, Memory allocation optimization
 
-## When Working on Challenges
-- Challenges are in `challenges/` directory and contain intentional bugs
+## When Working on Challenges (8 Problems)
+- Challenges are in `challenges/` directory and contain intentional bugs:
+  1. Deadlock fixing
+  2. Race condition resolution
+  3. Goroutine leak prevention
+  4. Rate limiter implementation
+  5. Memory leak fixing
+  6. Resource leak prevention (files, connections)
+  7. Security vulnerability fixing (timing attacks, DoS)
+  8. Performance optimization (lock contention, buffering)
 - Solutions demonstrate multiple approaches with different trade-offs
 - Use `go run -race` to detect race conditions
 - Monitor goroutines with `runtime.NumGoroutine()`
+- Check memory usage with `runtime.MemStats`
 
 ## Evaluation System
 The evaluator (`internal/evaluator/`) checks for:

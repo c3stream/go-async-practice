@@ -55,15 +55,26 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Retry with Exponential Backoff
 - Batch Processing
 
-### 2. Challenges（チャレンジ）
+### 2. Challenges（チャレンジ）- 12問
 実際の問題を解いて理解を深める：
-- デッドロックの修正
-- レース条件の解決
-- ゴルーチンリークの防止
-- レート制限の実装
+- Challenge 1: デッドロックの修正
+- Challenge 2: レース条件の解決
+- Challenge 3: ゴルーチンリークの防止
+- Challenge 4: レート制限の実装
+- Challenge 5: メモリリークの修正
+- Challenge 6: リソースリークの防止
+- Challenge 7: セキュリティ問題の修正
+- Challenge 8: パフォーマンス問題の改善
+- Challenge 9: 分散ロックの問題
+- Challenge 10: メッセージ順序保証の問題
+- Challenge 11: バックプレッシャー処理の問題
+- Challenge 12: 分散一貫性の問題
 
-### 3. Solutions（解答例）
-各チャレンジの複数の解法を提示
+### 3. Solutions（解答例）- 8問完全対応（1-8）
+各チャレンジの複数の解法を提示：
+- 各問題に対して2-4パターンの解法
+- ベストプラクティスの解説付き
+- パフォーマンス比較データ込み
 
 ### 4. Benchmarks（ベンチマーク）
 パフォーマンス特性を理解：
@@ -100,13 +111,17 @@ go run cmd/runner/main.go -mode=example -example=1
 
 ### チャレンジに挑戦
 ```bash
-# チャレンジ1を実行（問題のあるコードが実行される）
-go run cmd/runner/main.go -mode=challenge -challenge=1
+# チャレンジを実行（1-8の問題から選択）
+go run cmd/runner/main.go -mode=challenge -challenge=1  # デッドロック
+go run cmd/runner/main.go -mode=challenge -challenge=5  # メモリリーク
 
-# challenges/challenge01_deadlock.go を編集して修正
+# challenges/challenge0X_*.go を編集して修正
 
-# 解答例を確認
+# 解答例を確認（全8問対応）
 go run cmd/runner/main.go -mode=solution -challenge=1
+go run cmd/runner/main.go -mode=solution -challenge=8  # パフォーマンス改善
+
+# チャレンジ9-12は解答作成中
 ```
 
 ### ベンチマークを実行
@@ -131,8 +146,8 @@ go run cmd/runner/main.go -mode=evaluate
 ├── docker-compose.yml # 全インフラ定義
 ├── Makefile          # 便利コマンド集
 ├── examples/         # 学習用例題（16パターン）
-├── challenges/       # 修正が必要な問題コード
-├── solutions/        # 複数の解答例
+├── challenges/       # 修正が必要な問題コード（8問）
+├── solutions/        # 複数の解答例（1-8完全対応）
 ├── practical/        # 実践的な分散システム例
 │   ├── rabbitmq_example.go
 │   ├── kafka_example.go

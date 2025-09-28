@@ -167,8 +167,20 @@ func runChallenge(id int) {
 	case 8:
 		challenges.Challenge08_PerformanceIssue()
 		challenges.Challenge08_Benchmark()
+	case 9:
+		challenges.Challenge09_DistributedLockProblem()
+		challenges.Challenge09_Hint()
+	case 10:
+		challenges.Challenge10_MessageOrderingProblem()
+		challenges.Challenge10_Hint()
+	case 11:
+		challenges.Challenge11_BackpressureProblem()
+		challenges.Challenge11_Hint()
+	case 12:
+		challenges.Challenge12_ConsistencyProblem()
+		challenges.Challenge12_Hint()
 	default:
-		fmt.Printf("チャレンジ %d は存在しません (1-8を指定)\n", id)
+		fmt.Printf("チャレンジ %d は存在しません (1-12を指定)\n", id)
 	}
 }
 
@@ -182,8 +194,16 @@ func runSolution(id int) {
 		solutions.Solution03_FixedGoroutineLeak()
 	case 4:
 		solutions.Solution04_RateLimiter()
+	case 5:
+		solutions.Solution05_FixedMemoryLeak()
+	case 6:
+		solutions.Solution06_FixedResourceLeak()
+	case 7:
+		solutions.Solution07_FixedSecurity()
+	case 8:
+		solutions.Solution08_FixedPerformance()
 	default:
-		fmt.Printf("解答 %d は存在しません (1-4を指定)\n", id)
+		fmt.Printf("解答 %d は存在しません (1-8を指定)\n", id)
 	}
 }
 
