@@ -42,7 +42,10 @@ func main() {
 	case "hbase":
 		// Simulated example - works without Docker
 		practical.RunHBaseExample()
-	case "rabbitmq", "kafka", "redis-pubsub", "postgres", "echo-server",
+	case "redis-pubsub":
+		// Redis Pub/Sub example
+		practical.RunRedisPubSubExamples()
+	case "rabbitmq", "kafka", "postgres", "echo-server",
 	     "neo4j", "influxdb", "cockroachdb", "mongodb", "cassandra",
 	     "duckdb", "event-driven":
 		fmt.Printf("⚠️  '%s' pattern requires Docker services to be running.\n", pattern)
@@ -53,6 +56,8 @@ func main() {
 		fmt.Println("\nCurrently available without Docker:")
 		fmt.Println("  - couchbase (document database simulation)")
 		fmt.Println("  - hbase (wide column store simulation)")
+		fmt.Println("\nAvailable with Docker:")
+		fmt.Println("  - redis-pubsub (Redis Pub/Sub messaging)")
 	default:
 		log.Fatalf("Unknown pattern: %s", pattern)
 	}
