@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -18,8 +17,8 @@ type KafkaExample struct {
 	readers map[string]*kafka.Reader
 }
 
-// Event イベントデータ
-type Event struct {
+// KafkaEvent イベントデータ
+type KafkaEvent struct {
 	ID        string                 `json:"id"`
 	Type      string                 `json:"type"`
 	Source    string                 `json:"source"`
@@ -66,7 +65,7 @@ func (k *KafkaExample) Example1_EventStreaming() error {
 	// Producer goroutine
 	go func() {
 		for i := 0; i < 20; i++ {
-			event := Event{
+			event := KafkaEvent{
 				ID:        fmt.Sprintf("evt-%d", i),
 				Type:      eventTypes[i%len(eventTypes)],
 				Source:    "user-service",
@@ -99,7 +98,7 @@ func (k *KafkaExample) Example1_EventStreaming() error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		k.consumeEvents("logging-service", topic, func(event Event) {
+		k.consumeEvents("logging-service", topic, func(event KafkaEvent) {
 			fmt.Printf("📝 Logging: %s - %s\n", event.Type, event.ID)
 		})
 	}()
@@ -108,7 +107,7 @@ func (k *KafkaExample) Example1_EventStreaming() error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		k.consumeEvents("analytics-service", topic, func(event Event) {
+		k.consumeEvents("analytics-service", topic, func(event KafkaEvent) {
 			fmt.Printf("📊 Analytics: Processing %s event\n", event.Type)
 		})
 	}()
@@ -133,7 +132,7 @@ func (k *KafkaExample) Example2_EventSourcing() error {
 
 	// 注文イベントシーケンス
 	orderID := "ORDER-001"
-	events := []Event{
+	events := []KafkaEvent{
 		{
 			ID:        "evt-1",
 			Type:      "order.created",
@@ -216,7 +215,7 @@ func (k *KafkaExample) Example2_EventSourcing() error {
 			break
 		}
 
-		var event Event
+		var event KafkaEvent
 		json.Unmarshal(msg.Value, &event)
 
 		// 状態を更新
@@ -348,7 +347,7 @@ func (k *KafkaExample) Example3_StreamProcessing() error {
 }
 
 // Helper: イベント消費
-func (k *KafkaExample) consumeEvents(groupID, topic string, handler func(Event)) {
+func (k *KafkaExample) consumeEvents(groupID, topic string, handler func(KafkaEvent)) {
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:     k.brokers,
 		Topic:       topic,
@@ -368,7 +367,7 @@ func (k *KafkaExample) consumeEvents(groupID, topic string, handler func(Event))
 			break
 		}
 
-		var event Event
+		var event KafkaEvent
 		if err := json.Unmarshal(msg.Value, &event); err == nil {
 			handler(event)
 		}

@@ -24,10 +24,10 @@ make run-practical PATTERN=echo-server # Webサーバー
 ```
 
 利用可能なサービス:
-- PostgreSQL, Redis, DuckDB
-- RabbitMQ, Kafka
-- MinIO (S3互換), LocalStack (AWS互換)
-- Prometheus, Grafana, Jaeger
+- **データベース**: PostgreSQL, Redis, DuckDB, MongoDB, Cassandra, Neo4j, InfluxDB, CockroachDB
+- **メッセージング**: RabbitMQ, Kafka, NATS
+- **オブジェクトストレージ**: MinIO (S3互換), LocalStack (AWS互換)
+- **モニタリング**: Prometheus, Grafana, Jaeger
 
 ### 🎮 インタラクティブ学習機能
 - リアルタイムビジュアライザー
@@ -55,7 +55,7 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Retry with Exponential Backoff
 - Batch Processing
 
-### 2. Challenges（チャレンジ）- 12問
+### 2. Challenges（チャレンジ）- 16問
 実際の問題を解いて理解を深める：
 - Challenge 1: デッドロックの修正
 - Challenge 2: レース条件の解決
@@ -69,6 +69,10 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Challenge 10: メッセージ順序保証の問題
 - Challenge 11: バックプレッシャー処理の問題
 - Challenge 12: 分散一貫性の問題
+- Challenge 13: イベントソーシングの問題
+- Challenge 14: Sagaパターンの問題
+- Challenge 15: 分散キャッシュの問題
+- Challenge 16: ストリーム処理の問題
 
 ### 3. Solutions（解答例）- 8問完全対応（1-8）
 各チャレンジの複数の解法を提示：
@@ -111,9 +115,10 @@ go run cmd/runner/main.go -mode=example -example=1
 
 ### チャレンジに挑戦
 ```bash
-# チャレンジを実行（1-8の問題から選択）
+# チャレンジを実行（1-16の問題から選択）
 go run cmd/runner/main.go -mode=challenge -challenge=1  # デッドロック
 go run cmd/runner/main.go -mode=challenge -challenge=5  # メモリリーク
+go run cmd/runner/main.go -mode=challenge -challenge=13  # イベントソーシング
 
 # challenges/challenge0X_*.go を編集して修正
 
@@ -121,7 +126,7 @@ go run cmd/runner/main.go -mode=challenge -challenge=5  # メモリリーク
 go run cmd/runner/main.go -mode=solution -challenge=1
 go run cmd/runner/main.go -mode=solution -challenge=8  # パフォーマンス改善
 
-# チャレンジ9-12は解答作成中
+# チャレンジ9-16は解答作成中
 ```
 
 ### ベンチマークを実行
@@ -146,13 +151,22 @@ go run cmd/runner/main.go -mode=evaluate
 ├── docker-compose.yml # 全インフラ定義
 ├── Makefile          # 便利コマンド集
 ├── examples/         # 学習用例題（16パターン）
-├── challenges/       # 修正が必要な問題コード（8問）
+├── challenges/       # 修正が必要な問題コード（16問）
 ├── solutions/        # 複数の解答例（1-8完全対応）
 ├── practical/        # 実践的な分散システム例
-│   ├── rabbitmq_example.go
-│   ├── kafka_example.go
-│   ├── database_example.go
-│   └── echo_server.go
+│   ├── rabbitmq_example.go      # メッセージキュー
+│   ├── kafka_example.go         # イベントストリーミング
+│   ├── database_example.go      # PostgreSQL連携
+│   ├── echo_server.go          # Webサーバー並行処理
+│   ├── mongodb_example.go       # ドキュメントDB
+│   ├── cassandra_nosql.go      # 分散NoSQL
+│   ├── neo4j_graph.go          # グラフDB
+│   ├── influxdb_timeseries.go  # 時系列DB
+│   ├── cockroachdb_distributed.go # 分散SQL
+│   ├── couchbase_document.go   # ドキュメント型DB
+│   ├── hbase_columnar.go       # カラム指向DB
+│   ├── duckdb_analytics.go     # 分析用DB
+│   └── event_driven_example.go # イベント駆動
 ├── interactive/      # インタラクティブ練習
 ├── visualizer/       # リアルタイム可視化
 ├── debugger/         # デバッグ支援

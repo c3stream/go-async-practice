@@ -11,9 +11,9 @@ Goの並行処理パターンを実践的に学べる総合学習環境です。
 ### ✨ 特徴
 
 - 🎓 **16種類の並行処理パターン** - 基礎から実践まで
-- 🎯 **12個のチャレンジ問題** - 実際のバグや分散システムの問題を修正して学習
+- 🎯 **16個のチャレンジ問題** - 実際のバグや分散システムの問題を修正して学習
 - 📊 **自動評価システム** - コードを即座に採点
-- 🐳 **Docker統合** - 実践的なマイクロサービス環境
+- 🐳 **Docker統合** - 15種類以上のデータベース・メッセージングサービス
 - 🧪 **包括的なテスト** - Unit/Integration/E2E完備
 - 🚀 **ベンチマーク** - パフォーマンス測定
 
@@ -113,7 +113,16 @@ go run cmd/runner/main.go -mode=evaluate
 make docker-up
 
 # 実践例を実行
-make run-practical
+make run-practical PATTERN=rabbitmq     # メッセージキュー
+make run-practical PATTERN=kafka        # イベントストリーミング
+make run-practical PATTERN=mongodb      # ドキュメントDB
+make run-practical PATTERN=cassandra    # 分散NoSQL
+make run-practical PATTERN=neo4j        # グラフDB
+make run-practical PATTERN=influxdb     # 時系列DB
+make run-practical PATTERN=cockroachdb  # 分散SQL
+make run-practical PATTERN=couchbase    # ドキュメントDB（CAS対応）
+make run-practical PATTERN=hbase        # カラム指向DB
+make run-practical PATTERN=duckdb       # 分析DB
 
 # クリーンアップ
 make docker-down
@@ -123,10 +132,13 @@ make docker-down
 
 #### データベース
 - **PostgreSQL** - リレーショナルDB
+- **CockroachDB** - 分散SQL
 - **DuckDB** - OLAP分析データベース
 - **Redis** - キャッシュ/Pub-Sub
 - **MongoDB** - ドキュメント指向NoSQL
+- **Couchbase** - ドキュメントDB（CAS対応）
 - **Cassandra** - ワイドカラムストア
+- **HBase** - カラム指向ストア
 - **Neo4j** - グラフデータベース
 - **InfluxDB** - 時系列データベース
 
@@ -177,7 +189,7 @@ BenchmarkUnbufferedChannel:   141.9 ns/op
 go-async-practice/
 ├── cmd/runner/         # CLIエントリーポイント
 ├── examples/           # 学習用例題（16パターン）
-├── challenges/         # チャレンジ問題（12問）
+├── challenges/         # チャレンジ問題（16問）
 ├── solutions/          # 解答例（全8問対応）
 ├── practical/          # 実践的な例（Docker必須）
 ├── benchmarks/         # パフォーマンス測定

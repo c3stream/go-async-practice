@@ -16,8 +16,8 @@ type EventDrivenExample struct {
 	js nats.JetStreamContext
 }
 
-// Event - イベント構造体
-type Event struct {
+// EventMessage - イベント構造体
+type EventMessage struct {
 	ID        string                 `json:"id"`
 	Type      string                 `json:"type"`
 	Timestamp time.Time              `json:"timestamp"`
@@ -120,7 +120,7 @@ func (e *EventDrivenExample) Example2_CQRS() error {
 
 	// Command側: 書き込み専用
 	commandHandler := func(command string, data interface{}) {
-		event := Event{
+		event := EventMessage{
 			ID:        fmt.Sprintf("evt_%d", time.Now().UnixNano()),
 			Type:      command,
 			Timestamp: time.Now(),
@@ -142,7 +142,7 @@ func (e *EventDrivenExample) Example2_CQRS() error {
 		projection := make(map[string]interface{})
 
 		sub, _ := e.js.Subscribe("events.commands", func(msg *nats.Msg) {
-			var event Event
+			var event EventMessage
 			json.Unmarshal(msg.Data, &event)
 
 			// 投影を更新

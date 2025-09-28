@@ -179,8 +179,16 @@ func runChallenge(id int) {
 	case 12:
 		challenges.Challenge12_ConsistencyProblem()
 		challenges.Challenge12_Hint()
+	case 13:
+		challenges.Challenge13_EventSourcingProblem()
+	case 14:
+		challenges.Challenge14_SagaPatternProblem()
+	case 15:
+		challenges.Challenge15_DistributedCacheProblem()
+	case 16:
+		challenges.Challenge16_StreamProcessingProblem()
 	default:
-		fmt.Printf("チャレンジ %d は存在しません (1-12を指定)\n", id)
+		fmt.Printf("チャレンジ %d は存在しません (1-16を指定)\n", id)
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/go-redis/redis/v8"
-	"github.com/marcboeker/go-duckdb"
+	_ "github.com/marcboeker/go-duckdb"
 )
 
 // DatabaseExample データベース連携パターン
