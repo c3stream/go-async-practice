@@ -1,0 +1,407 @@
+version: '3.8'
+
+services:
+  # ==================== RELATIONAL DATABASES ====================
+  # PostgreSQL - Relational Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: go-async-postgres
+    environment:
+      POSTGRES_DB: goasync
+      POSTGRES_USER: gouser
+      POSTGRES_PASSWORD: gopass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gouser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== KEY-VALUE STORES ====================
+  # Redis - Cache and Pub/Sub
+  redis:
+    image: redis:7-alpine
+    container_name: go-async-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Memcached - In-Memory Cache
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: go-async-memcached
+    ports:
+      - "11211:11211"
+    command: memcached -m 256
+    networks:
+      - async-network
+
+  # ==================== MESSAGE QUEUES ====================
+  # RabbitMQ - Message Queue
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: go-async-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kafka & Zookeeper - Event Streaming
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: go-async-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - async-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: go-async-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - async-network
+
+  # NATS - High-Performance Message Bus
+  nats:
+    image: nats:2-alpine
+    container_name: go-async-nats
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # HTTP monitoring
+      - "6222:6222"  # Cluster
+    command: "-js -m 8222"
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== NoSQL DATABASES ====================
+  # MongoDB - Document Database
+  mongodb:
+    image: mongo:7
+    container_name: go-async-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: asyncdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - async-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Cassandra - Column Family Store
+  cassandra:
+    image: cassandra:4
+    container_name: go-async-cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: "AsyncCluster"
+      CASSANDRA_DC: "dc1"
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+      MAX_HEAP_SIZE: 512M
+      HEAP_NEWSIZE: 100M
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  # DynamoDB Local - AWS DynamoDB Compatible
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: go-async-dynamodb
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    ports:
+      - "8000:8000"
+    volumes:
+      - dynamodb_data:/data
+    networks:
+      - async-network
+
+  # ==================== SPECIAL PURPOSE DATABASES ====================
+  # Neo4j - Graph Database
+  neo4j:
+    image: neo4j:5
+    container_name: go-async-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/password123
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+      NEO4J_dbms_memory_pagecache_size: 512M
+      NEO4J_dbms_memory_heap_max__size: 512M
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password123", "MATCH () RETURN count(*) LIMIT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # InfluxDB - Time Series Database
+  influxdb:
+    image: influxdb:2
+    container_name: go-async-influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: password123
+      DOCKER_INFLUXDB_INIT_ORG: asyncorg
+      DOCKER_INFLUXDB_INIT_BUCKET: metrics
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: mytoken
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== DISTRIBUTED DATABASES ====================
+  # CockroachDB - Distributed SQL
+  cockroachdb:
+    image: cockroachdb/cockroach:latest
+    container_name: go-async-cockroach
+    command: start-single-node --insecure --store=type=mem,size=0.5 --advertise-addr=cockroachdb
+    ports:
+      - "26257:26257"  # SQL
+      - "8080:8080"    # Admin UI
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "cockroach", "sql", "--insecure", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== OBJECT STORAGE ====================
+  # MinIO - S3 Compatible Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: go-async-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Console
+    volumes:
+      - minio_data:/data
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # ==================== EVENT SOURCING ====================
+  # EventStore - Event Sourcing Database
+  eventstore:
+    image: eventstore/eventstore:latest
+    container_name: go-async-eventstore
+    environment:
+      EVENTSTORE_INSECURE: "true"
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
+      EVENTSTORE_MEM_DB: "true"
+      EVENTSTORE_RUN_PROJECTIONS: "All"
+    ports:
+      - "2113:2113"  # HTTP API & UI
+      - "1113:1113"  # TCP
+    networks:
+      - async-network
+
+  # ==================== SEARCH & ANALYTICS ====================
+  # Elasticsearch - Full-text Search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: go-async-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - async-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana - Elasticsearch UI
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: go-async-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - async-network
+
+  # ==================== MONITORING & OBSERVABILITY ====================
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: go-async-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - async-network
+
+  # Grafana - Metrics Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: go-async-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=redis-datasource
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - async-network
+
+  # Jaeger - Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: go-async-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      SPAN_STORAGE_TYPE: memory
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"  # UI
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+    networks:
+      - async-network
+
+  # ==================== LOGGING ====================
+  # Loki - Log Aggregation
+  loki:
+    image: grafana/loki:latest
+    container_name: go-async-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - async-network
+
+  # Promtail - Log Collector
+  promtail:
+    image: grafana/promtail:latest
+    container_name: go-async-promtail
+    volumes:
+      - /var/log:/var/log
+      - ./configs/promtail.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - async-network
+
+networks:
+  async-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  kafka_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+  mongodb_data:
+  cassandra_data:
+  dynamodb_data:
+  neo4j_data:
+  influxdb_data:
+  elasticsearch_data:

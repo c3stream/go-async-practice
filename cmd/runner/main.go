@@ -11,6 +11,8 @@ import (
 	"github.com/kazuhirokondo/go-async-practice/challenges"
 	"github.com/kazuhirokondo/go-async-practice/solutions"
 	"github.com/kazuhirokondo/go-async-practice/internal/evaluator"
+	"github.com/kazuhirokondo/go-async-practice/interactive"
+	"github.com/kazuhirokondo/go-async-practice/scenarios"
 )
 
 func main() {
@@ -153,8 +155,20 @@ func runChallenge(id int) {
 	case 4:
 		challenges.Challenge04_ImplementRateLimiter()
 		challenges.Challenge04_Hint()
+	case 5:
+		challenges.Challenge05_MemoryLeak()
+		challenges.Challenge05_Hint()
+	case 6:
+		challenges.Challenge06_ResourceLeak()
+		challenges.Challenge06_Hint()
+	case 7:
+		challenges.Challenge07_SecurityIssue()
+		challenges.Challenge07_Hint()
+	case 8:
+		challenges.Challenge08_PerformanceIssue()
+		challenges.Challenge08_Benchmark()
 	default:
-		fmt.Printf("チャレンジ %d は存在しません (1-4を指定)\n", id)
+		fmt.Printf("チャレンジ %d は存在しません (1-8を指定)\n", id)
 	}
 }
 
@@ -233,4 +247,40 @@ func runEvaluation() {
 
 	// 結果表示
 	eval.PrintSummary()
+}
+
+// runQuiz - インタラクティブクイズを実行
+func runQuiz() {
+	quiz := interactive.NewInteractiveQuiz()
+	quiz.StartQuiz()
+}
+
+// runScenario - 実世界シナリオを実行
+func runScenario(id int) {
+	scenarios := scenarios.NewRealWorldScenarios()
+
+	switch id {
+	case 0:
+		// 全シナリオ実行
+		scenarios.Scenario1_ECommercePlatform()
+		scenarios.Scenario2_RealTimeChat()
+		scenarios.Scenario3_LoadBalancer()
+		scenarios.Scenario4_DataPipeline()
+	case 1:
+		scenarios.Scenario1_ECommercePlatform()
+	case 2:
+		scenarios.Scenario2_RealTimeChat()
+	case 3:
+		scenarios.Scenario3_LoadBalancer()
+	case 4:
+		scenarios.Scenario4_DataPipeline()
+	default:
+		fmt.Printf("シナリオ %d は存在しません (1-4を指定)\n", id)
+	}
+}
+
+// runVisualization - リアルタイム可視化を実行
+func runVisualization() {
+	vis := interactive.NewVisualization()
+	vis.VisualizeWorkerPool()
 }
