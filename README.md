@@ -55,8 +55,10 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Retry with Exponential Backoff
 - Batch Processing
 
-### 2. Challenges（チャレンジ）- 16問
+### 2. Challenges（チャレンジ）- 24問
 実際の問題を解いて理解を深める：
+
+**基礎問題（1-8）**：
 - Challenge 1: デッドロックの修正
 - Challenge 2: レース条件の解決
 - Challenge 3: ゴルーチンリークの防止
@@ -65,6 +67,8 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Challenge 6: リソースリークの防止
 - Challenge 7: セキュリティ問題の修正
 - Challenge 8: パフォーマンス問題の改善
+
+**分散システム問題（9-16）**：
 - Challenge 9: 分散ロックの問題
 - Challenge 10: メッセージ順序保証の問題
 - Challenge 11: バックプレッシャー処理の問題
@@ -73,6 +77,16 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Challenge 14: Sagaパターンの問題
 - Challenge 15: 分散キャッシュの問題
 - Challenge 16: ストリーム処理の問題
+
+**エンタープライズパターン（17-24）** 🆕：
+- Challenge 17: Event Busパターンの実装
+- Challenge 18: Message Busとルーティング
+- Challenge 19: 分散ロギングシステム
+- Challenge 20: ブロックチェーン風コンセンサス
+- Challenge 21: グラフデータベースパターン
+- Challenge 22: 時系列データベース
+- Challenge 23: カラムナストレージエンジン
+- Challenge 24: オブジェクトストレージシステム
 
 ### 3. Solutions（解答例）- ✅ 16問完全対応（1-16）
 全てのチャレンジに複数の解法を提供：
@@ -180,7 +194,10 @@ go run cmd/runner/main.go -mode=evaluate
 │   ├── couchbase_document.go   # ドキュメント型DB
 │   ├── hbase_columnar.go       # カラム指向DB
 │   ├── duckdb_analytics.go     # 分析用DB
-│   └── event_driven_example.go # イベント駆動
+│   ├── event_driven_example.go # イベント駆動
+│   ├── event_bus_example.go    # Event Busパターン 🆕
+│   ├── message_bus_example.go  # Message Busパターン 🆕
+│   └── distributed_logging_example.go # 分散ロギング 🆕
 ├── interactive/      # インタラクティブ練習
 ├── visualizer/       # リアルタイム可視化
 ├── debugger/         # デバッグ支援

@@ -17,9 +17,9 @@ import (
 
 func main() {
 	var (
-		mode      = flag.String("mode", "menu", "実行モード: menu, example, challenge, solution, benchmark, evaluate")
-		exampleID = flag.Int("example", 0, "実行する例題番号 (1-11)")
-		challengeID = flag.Int("challenge", 0, "実行するチャレンジ番号 (1-4)")
+		mode      = flag.String("mode", "menu", "実行モード: menu, example, challenge, solution, benchmark, evaluate, practical, interactive")
+		exampleID = flag.Int("example", 0, "実行する例題番号 (1-16)")
+		challengeID = flag.Int("challenge", 0, "実行するチャレンジ番号 (1-24)")
 	)
 	flag.Parse()
 
@@ -37,6 +37,10 @@ func main() {
 	case "benchmark":
 		fmt.Println("ベンチマークを実行するには以下のコマンドを使用してください:")
 		fmt.Println("go test -bench=. ./benchmarks/")
+	case "practical":
+		runPractical()
+	case "interactive":
+		runInteractive()
 	default:
 		fmt.Printf("不明なモード: %s\n", *mode)
 		flag.Usage()
@@ -90,11 +94,36 @@ func showMenu() {
   15. リトライ処理 - エラーハンドリング
   16. バッチ処理 - 効率的なデータ処理
 
-🎯 チャレンジ問題（全4問）:
+🎯 チャレンジ問題（全24問）:
+  【基礎編 1-8】
   1. デッドロックの修正 - お互いを待ち続ける問題を解決
   2. レース条件の修正 - データ競合を安全に
   3. ゴルーチンリークの修正 - メモリリークを防ぐ
   4. レート制限の実装 - API制限を実装する
+  5. メモリリークの修正 - 適切なメモリ管理
+  6. リソースリークの修正 - ファイル・接続の管理
+  7. セキュリティ問題の修正 - 並行処理の安全性
+  8. パフォーマンス問題の改善 - 効率的な並行処理
+
+  【分散システム編 9-16】
+  9. 分散ロック - 複数ノードでの同期
+  10. メッセージ順序保証 - イベントの順序制御
+  11. バックプレッシャー - フロー制御
+  12. 分散一貫性 - CAP定理の実装
+  13. イベントソーシング - イベント駆動設計
+  14. Sagaパターン - 分散トランザクション
+  15. 分散キャッシュ - キャッシュ戦略
+  16. ストリーム処理 - リアルタイム処理
+
+  【エンタープライズ編 17-24】
+  17. Event Bus - イベント配信システム
+  18. Message Bus - メッセージルーティング
+  19. 分散ロギング - ログ集約と分析
+  20. ブロックチェーン風コンセンサス - 合意形成
+  21. グラフデータベース - グラフ処理
+  22. 時系列データベース - 時系列データ管理
+  23. カラムナストレージ - 列指向ストレージ
+  24. オブジェクトストレージ - S3風ストレージ
 
 🚀 おすすめの学習順序:
   1️⃣ まずは例題1〜7で基礎を固める
@@ -187,8 +216,24 @@ func runChallenge(id int) {
 		challenges.Challenge15_DistributedCacheProblem()
 	case 16:
 		challenges.Challenge16_StreamProcessingProblem()
+	case 17:
+		challenges.RunChallenge17()
+	case 18:
+		challenges.RunChallenge18()
+	case 19:
+		challenges.RunChallenge19()
+	case 20:
+		challenges.RunChallenge20()
+	case 21:
+		challenges.RunChallenge21()
+	case 22:
+		challenges.RunChallenge22()
+	case 23:
+		challenges.RunChallenge23()
+	case 24:
+		challenges.RunChallenge24()
 	default:
-		fmt.Printf("チャレンジ %d は存在しません (1-16を指定)\n", id)
+		fmt.Printf("チャレンジ %d は存在しません (1-24を指定)\n", id)
 	}
 }
 
@@ -210,8 +255,40 @@ func runSolution(id int) {
 		solutions.Solution07_FixedSecurity()
 	case 8:
 		solutions.Solution08_FixedPerformance()
+	case 9:
+		solutions.Solution09_DistributedLock()
+	case 10:
+		solutions.Solution10_MessageOrdering()
+	case 11:
+		solutions.Solution11_Backpressure()
+	case 12:
+		solutions.Solution12_Consistency()
+	case 13:
+		solutions.Solution13_EventSourcing()
+	case 14:
+		solutions.Solution14_SagaPattern()
+	case 15:
+		solutions.Solution15_DistributedCache()
+	case 16:
+		solutions.Solution16_StreamProcessing()
+	case 17:
+		solutions.RunSolution17()
+	case 18:
+		solutions.RunSolution18()
+	case 19:
+		solutions.RunSolution19()
+	case 20:
+		solutions.RunSolution20()
+	case 21:
+		solutions.RunSolution21()
+	case 22:
+		solutions.RunSolution22()
+	case 23:
+		solutions.RunSolution23()
+	case 24:
+		solutions.RunSolution24()
 	default:
-		fmt.Printf("解答 %d は存在しません (1-8を指定)\n", id)
+		fmt.Printf("解答 %d は存在しません (1-24を指定)\n", id)
 	}
 }
 
@@ -311,4 +388,55 @@ func runScenario(id int) {
 func runVisualization() {
 	vis := interactive.NewVisualization()
 	vis.VisualizeWorkerPool()
+}
+
+// runPractical - 実践的な例を実行
+func runPractical() {
+	fmt.Println("\n🚀 実践的な分散システムパターン\n")
+	fmt.Println("以下のコマンドで実行できます:")
+	fmt.Println()
+	fmt.Println("1. RabbitMQ メッセージキュー:")
+	fmt.Println("   make run-practical PATTERN=rabbitmq")
+	fmt.Println()
+	fmt.Println("2. Kafka イベントストリーミング:")
+	fmt.Println("   make run-practical PATTERN=kafka")
+	fmt.Println()
+	fmt.Println("3. Redis Pub/Sub:")
+	fmt.Println("   make run-practical PATTERN=redis-pubsub")
+	fmt.Println()
+	fmt.Println("4. PostgreSQL データベース:")
+	fmt.Println("   make run-practical PATTERN=postgres")
+	fmt.Println()
+	fmt.Println("5. MongoDB ドキュメントDB:")
+	fmt.Println("   make run-practical PATTERN=mongodb")
+	fmt.Println()
+	fmt.Println("6. Echo Webサーバー:")
+	fmt.Println("   make run-practical PATTERN=echo-server")
+	fmt.Println()
+	fmt.Println("注意: 事前に 'make docker-up' でDockerサービスを起動してください")
+}
+
+// runInteractive - インタラクティブモードを実行
+func runInteractive() {
+	fmt.Println("\n🎮 インタラクティブ学習モード\n")
+	fmt.Println("1. クイズモード - 並行プログラミングの理解度をチェック")
+	fmt.Println("2. ビジュアライザー - リアルタイムでgoroutineの動作を可視化")
+	fmt.Println("3. XPシステム - 課題をクリアして経験値を獲得")
+	fmt.Println()
+	fmt.Print("選択 (1-3): ")
+
+	var choice int
+	fmt.Scanf("%d", &choice)
+
+	switch choice {
+	case 1:
+		runQuiz()
+	case 2:
+		runVisualization()
+	case 3:
+		fmt.Println("\nXPシステムは各チャレンジをクリアすることで自動的に経験値が蓄積されます")
+		fmt.Println("チャレンジモードで問題を解いて、レベルアップを目指しましょう！")
+	default:
+		fmt.Println("無効な選択です")
+	}
 }

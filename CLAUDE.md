@@ -8,7 +8,7 @@ This is a comprehensive Go learning environment for parallel, concurrent, and as
 ## Project Structure
 ```
 ├── examples/          # 16 learning examples (basic + advanced patterns)
-├── challenges/        # 16 challenges with problematic code to fix
+├── challenges/        # 24 challenges with problematic code to fix
 │   ├── challenge01_deadlock.go      # Deadlock issues
 │   ├── challenge02_race.go          # Race conditions
 │   ├── challenge03_goroutine_leak.go # Goroutine leaks
@@ -24,7 +24,15 @@ This is a comprehensive Go learning environment for parallel, concurrent, and as
 │   ├── challenge13_event_sourcing.go # Event sourcing problems
 │   ├── challenge14_saga_pattern.go  # Saga pattern issues
 │   ├── challenge15_distributed_cache.go # Distributed cache problems
-│   └── challenge16_stream_processing.go # Stream processing issues
+│   ├── challenge16_stream_processing.go # Stream processing issues
+│   ├── challenge17_event_bus.go     # Event bus pattern
+│   ├── challenge18_message_bus.go   # Message bus with routing
+│   ├── challenge19_distributed_logger.go # Distributed logging
+│   ├── challenge20_blockchain_consensus.go # Consensus mechanisms
+│   ├── challenge21_graph_database.go # Graph database patterns
+│   ├── challenge22_timeseries_db.go # Time series database
+│   ├── challenge23_columnar_storage.go # Columnar storage engine
+│   └── challenge24_object_storage.go # Object storage system
 ├── solutions/         # Complete solutions for all challenges 1-16
 ├── benchmarks/        # Performance benchmarks
 ├── practical/         # Real-world examples with external services
@@ -40,7 +48,10 @@ This is a comprehensive Go learning environment for parallel, concurrent, and as
 │   ├── cockroachdb_distributed.go # Distributed SQL
 │   ├── couchbase_document.go   # Document DB with CAS
 │   ├── hbase_columnar.go       # Wide column store
-│   └── event_driven_example.go # Event-driven architecture
+│   ├── event_driven_example.go # Event-driven architecture
+│   ├── event_bus_example.go    # Production Event Bus with Circuit Breaker
+│   ├── message_bus_example.go  # Message Bus with partitioning & consumer groups
+│   └── distributed_logging_example.go # Distributed logging with multiple sinks
 ├── interactive/       # Interactive learning exercises with gamification
 │   ├── quiz.go                 # Interactive quiz system
 │   ├── visualizer.go          # Real-time visualization
@@ -162,7 +173,7 @@ make fmt
 11. **Graceful Shutdown**: Clean termination
 12. **Distributed Patterns**: Consensus, locking, consistency
 
-## Challenge Problems (16 Total)
+## Challenge Problems (24 Total)
 
 ### Basic Challenges (1-8) - With Solutions
 1. **Deadlock**: Classic dining philosophers, resource ordering
@@ -183,6 +194,16 @@ make fmt
 14. **Saga Pattern**: Compensation, state management - ✅ 3 solutions (Compensating, Orchestration, Choreography)
 15. **Distributed Cache**: Cache stampede, hot keys, consistency - ✅ 3 solutions (Singleflight, Hot key, Write-through)
 16. **Stream Processing**: Windowing, late data, checkpointing - ✅ 3 solutions (Window management, Watermark, Checkpoint/Recovery)
+
+### Enterprise Challenges (17-24) - New Problems
+17. **Event Bus**: Event deduplication, subscriber management, circuit breaker
+18. **Message Bus**: Topic routing, consumer groups, partitioning
+19. **Distributed Logger**: Log aggregation, buffering, multiple sinks
+20. **Blockchain Consensus**: Fork resolution, PBFT-style consensus, mining
+21. **Graph Database**: Traversal deadlocks, cycle detection, memory management
+22. **Time Series DB**: Downsampling, window aggregations, compression
+23. **Columnar Storage**: WAL, compaction, bloom filters, versioning
+24. **Object Storage**: Multipart upload, lifecycle policies, replication
 
 ## Interactive Learning Features
 
