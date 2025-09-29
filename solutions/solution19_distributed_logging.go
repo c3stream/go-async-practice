@@ -297,7 +297,7 @@ func (l *StructuredLogger) LogWithContext(ctx context.Context, level LogLevel, m
 
 func (l *StructuredLogger) shouldSample(level LogLevel) bool {
 	l.sampler.mu.RLock()
-	rate := l.sampler.rates[level]
+	_ = l.sampler.rates[level]
 	l.sampler.mu.RUnlock()
 
 	// Always sample first N logs

@@ -1,7 +1,6 @@
 package challenges
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"sync"

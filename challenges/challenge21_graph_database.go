@@ -1,7 +1,6 @@
 package challenges
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -46,11 +45,11 @@ type GraphDatabase struct {
 
 type TransactionManager struct {
 	mu           sync.Mutex
-	transactions map[string]*Transaction
+	transactions map[string]*GraphTransaction
 	locks        map[string]string // node/edge ID -> transaction ID
 }
 
-type Transaction struct {
+type GraphTransaction struct {
 	ID        string
 	StartTime time.Time
 	Changes   []Change
@@ -79,7 +78,7 @@ func NewGraphDatabase() *GraphDatabase {
 		indexes:     make(map[string]map[string][]string),
 		constraints: make(map[string]func(*GraphNode) bool),
 		txManager: &TransactionManager{
-			transactions: make(map[string]*Transaction),
+			transactions: make(map[string]*GraphTransaction),
 			locks:        make(map[string]string),
 		},
 	}
@@ -245,8 +244,8 @@ func (gdb *GraphDatabase) DetectCycle(startID string) bool {
 }
 
 // 問題5: トランザクション処理
-func (gdb *GraphDatabase) BeginTransaction() *Transaction {
-	tx := &Transaction{
+func (gdb *GraphDatabase) BeginTransaction() *GraphTransaction {
+	tx := &GraphTransaction{
 		ID:        fmt.Sprintf("tx-%d", time.Now().UnixNano()),
 		StartTime: time.Now(),
 		Changes:   []Change{},

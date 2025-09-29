@@ -21,7 +21,7 @@ type PoWBlockchain struct {
 	mu         sync.RWMutex
 	chain      []*Block
 	difficulty int
-	mempool    []Transaction
+	mempool    []BlockchainTransaction
 	mining     int32
 	validators map[string]*Validator
 }
@@ -29,14 +29,14 @@ type PoWBlockchain struct {
 type Block struct {
 	Index        int
 	Timestamp    time.Time
-	Transactions []Transaction
+	Transactions []BlockchainTransaction
 	PrevHash     string
 	Hash         string
 	Nonce        int
 	Miner        string
 }
 
-type Transaction struct {
+type BlockchainTransaction struct {
 	ID        string
 	From      string
 	To        string
@@ -54,7 +54,7 @@ func NewPoWBlockchain() *PoWBlockchain {
 	bc := &PoWBlockchain{
 		chain:      make([]*Block, 0),
 		difficulty: 4,
-		mempool:    make([]Transaction, 0),
+		mempool:    make([]BlockchainTransaction, 0),
 		validators: make(map[string]*Validator),
 	}
 
@@ -112,7 +112,7 @@ func (bc *PoWBlockchain) MineBlock(ctx context.Context, miner string) (*Block, e
 		PrevHash:     prevBlock.Hash,
 		Miner:        miner,
 	}
-	bc.mempool = make([]Transaction, 0)
+	bc.mempool = make([]BlockchainTransaction, 0)
 	bc.mu.Unlock()
 
 	// Proof of Work
@@ -141,7 +141,7 @@ func (bc *PoWBlockchain) MineBlock(ctx context.Context, miner string) (*Block, e
 	}
 }
 
-func (bc *PoWBlockchain) AddTransaction(tx Transaction) {
+func (bc *PoWBlockchain) AddTransaction(tx BlockchainTransaction) {
 	bc.mu.Lock()
 	defer bc.mu.Unlock()
 	bc.mempool = append(bc.mempool, tx)
@@ -183,13 +183,13 @@ type PBFTConsensus struct {
 	sequence     int
 	prepared     map[string]int
 	committed    map[string]int
-	messageLog   []Message
+	messageLog   []ConsensusMessage
 	isPrimary    bool
 	chain        []*Block
 	faultNodes   int
 }
 
-type Message struct {
+type ConsensusMessage struct {
 	Type      string // REQUEST, PREPREPARE, PREPARE, COMMIT
 	View      int
 	Sequence  int
@@ -208,7 +208,7 @@ func NewPBFTConsensus(nodeID string, nodes []string) *PBFTConsensus {
 		sequence:   0,
 		prepared:   make(map[string]int),
 		committed:  make(map[string]int),
-		messageLog: make([]Message, 0),
+		messageLog: make([]ConsensusMessage, 0),
 		isPrimary:  nodes[0] == nodeID,
 		chain:      make([]*Block, 0),
 		faultNodes: faultNodes,
@@ -222,7 +222,7 @@ func (p *PBFTConsensus) ProposeBlock(ctx context.Context, block *Block) error {
 
 	p.mu.Lock()
 	p.sequence++
-	msg := Message{
+	msg := ConsensusMessage{
 		Type:     "PREPREPARE",
 		View:     p.view,
 		Sequence: p.sequence,
@@ -239,7 +239,7 @@ func (p *PBFTConsensus) ProposeBlock(ctx context.Context, block *Block) error {
 	return p.waitForConsensus(ctx, block)
 }
 
-func (p *PBFTConsensus) HandleMessage(ctx context.Context, msg Message) {
+func (p *PBFTConsensus) HandleMessage(ctx context.Context, msg ConsensusMessage) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -260,9 +260,9 @@ func (p *PBFTConsensus) HandleMessage(ctx context.Context, msg Message) {
 	}
 }
 
-func (p *PBFTConsensus) handlePrePrepare(ctx context.Context, msg Message) {
+func (p *PBFTConsensus) handlePrePrepare(ctx context.Context, msg ConsensusMessage) {
 	// Send prepare message
-	prepareMsg := Message{
+	prepareMsg := ConsensusMessage{
 		Type:     "PREPARE",
 		View:     msg.View,
 		Sequence: msg.Sequence,
@@ -273,14 +273,14 @@ func (p *PBFTConsensus) handlePrePrepare(ctx context.Context, msg Message) {
 	p.broadcast(ctx, prepareMsg)
 }
 
-func (p *PBFTConsensus) handlePrepare(ctx context.Context, msg Message) {
+func (p *PBFTConsensus) handlePrepare(ctx context.Context, msg ConsensusMessage) {
 	key := fmt.Sprintf("%d-%d", msg.View, msg.Sequence)
 	p.prepared[key]++
 
 	// Check if we have enough prepares (2f+1)
 	if p.prepared[key] >= 2*p.faultNodes+1 {
 		// Send commit message
-		commitMsg := Message{
+		commitMsg := ConsensusMessage{
 			Type:     "COMMIT",
 			View:     msg.View,
 			Sequence: msg.Sequence,
@@ -292,7 +292,7 @@ func (p *PBFTConsensus) handlePrepare(ctx context.Context, msg Message) {
 	}
 }
 
-func (p *PBFTConsensus) handleCommit(ctx context.Context, msg Message) {
+func (p *PBFTConsensus) handleCommit(ctx context.Context, msg ConsensusMessage) {
 	key := fmt.Sprintf("%d-%d", msg.View, msg.Sequence)
 	p.committed[key]++
 
@@ -304,12 +304,12 @@ func (p *PBFTConsensus) handleCommit(ctx context.Context, msg Message) {
 	}
 }
 
-func (p *PBFTConsensus) verifyMessage(msg Message) bool {
+func (p *PBFTConsensus) verifyMessage(msg ConsensusMessage) bool {
 	// Simplified verification
 	return msg.View == p.view && msg.Sequence > 0
 }
 
-func (p *PBFTConsensus) broadcast(ctx context.Context, msg Message) {
+func (p *PBFTConsensus) broadcast(ctx context.Context, msg ConsensusMessage) {
 	// Simulate network broadcast
 	for _, node := range p.nodes {
 		if node != p.nodeID {
@@ -354,7 +354,7 @@ type RaftNode struct {
 	state       string // follower, candidate, leader
 	currentTerm int
 	votedFor    string
-	log         []LogEntry
+	log         []RaftLogEntry
 	commitIndex int
 	lastApplied int
 
@@ -372,7 +372,7 @@ type RaftNode struct {
 	chain []*Block
 }
 
-type LogEntry struct {
+type RaftLogEntry struct {
 	Term  int
 	Index int
 	Data  *Block
@@ -390,7 +390,7 @@ func NewRaftNode(id string, peers []string) *RaftNode {
 		state:       "follower",
 		currentTerm: 0,
 		votedFor:    "",
-		log:         make([]LogEntry, 0),
+		log:         make([]RaftLogEntry, 0),
 		commitIndex: 0,
 		lastApplied: 0,
 		nextIndex:   make(map[string]int),
@@ -536,7 +536,7 @@ func (r *RaftNode) ProposeBlock(ctx context.Context, block *Block) error {
 
 	// Append to log
 	r.mu.Lock()
-	entry := LogEntry{
+	entry := RaftLogEntry{
 		Term:  r.currentTerm,
 		Index: len(r.log),
 		Data:  block,
@@ -548,7 +548,7 @@ func (r *RaftNode) ProposeBlock(ctx context.Context, block *Block) error {
 	return r.replicateEntry(ctx, entry)
 }
 
-func (r *RaftNode) replicateEntry(ctx context.Context, entry LogEntry) error {
+func (r *RaftNode) replicateEntry(ctx context.Context, entry RaftLogEntry) error {
 	successCount := 1 // Leader counts as success
 
 	for _, peer := range r.peers {
@@ -602,13 +602,13 @@ func RunSolution20() {
 	pow := NewPoWBlockchain()
 
 	// Add transactions
-	pow.AddTransaction(Transaction{
+	pow.AddTransaction(BlockchainTransaction{
 		ID:     "tx1",
 		From:   "Alice",
 		To:     "Bob",
 		Amount: 100,
 	})
-	pow.AddTransaction(Transaction{
+	pow.AddTransaction(BlockchainTransaction{
 		ID:     "tx2",
 		From:   "Bob",
 		To:     "Charlie",

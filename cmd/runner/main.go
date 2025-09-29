@@ -17,9 +17,9 @@ import (
 
 func main() {
 	var (
-		mode      = flag.String("mode", "menu", "実行モード: menu, example, challenge, solution, benchmark, evaluate, practical, interactive")
+		mode      = flag.String("mode", "menu", "実行モード: menu, example, challenge, solution, benchmark, evaluate, practical, interactive, battle")
 		exampleID = flag.Int("example", 0, "実行する例題番号 (1-16)")
-		challengeID = flag.Int("challenge", 0, "実行するチャレンジ番号 (1-24)")
+		challengeID = flag.Int("challenge", 0, "実行するチャレンジ番号 (1-32)")
 	)
 	flag.Parse()
 
@@ -41,6 +41,8 @@ func main() {
 		runPractical()
 	case "interactive":
 		runInteractive()
+	case "battle":
+		runBattle()
 	default:
 		fmt.Printf("不明なモード: %s\n", *mode)
 		flag.Usage()
@@ -59,7 +61,7 @@ func showMenu() {
 1. 📖 例題で学ぶ - 基本パターンを順番に学習
    実行: go run cmd/runner/main.go -mode=example -example=1
 
-2. 🎯 チャレンジ問題 - 実際のバグを修正して学ぶ
+2. 🎯 チャレンジ問題 - 実際のバグを修正して学ぶ（全32問）
    実行: go run cmd/runner/main.go -mode=challenge -challenge=1
 
 3. 💡 解答例 - 複数の解法を確認
@@ -70,6 +72,12 @@ func showMenu() {
 
 5. ⚡ ベンチマーク - パフォーマンスを測定
    実行: go test -bench=. ./benchmarks/
+
+6. 🎮 インタラクティブ学習 - ゲーム形式で楽しく学ぶ
+   実行: go run cmd/runner/main.go -mode=interactive
+
+7. ⚔️ バトルアリーナ - 並行処理スキルで対戦！
+   実行: go run cmd/runner/main.go -mode=battle
 
 📖 例題一覧（全16パターン）:
   【基礎編】
@@ -94,7 +102,7 @@ func showMenu() {
   15. リトライ処理 - エラーハンドリング
   16. バッチ処理 - 効率的なデータ処理
 
-🎯 チャレンジ問題（全24問）:
+🎯 チャレンジ問題（全32問）:
   【基礎編 1-8】
   1. デッドロックの修正 - お互いを待ち続ける問題を解決
   2. レース条件の修正 - データ競合を安全に
@@ -115,7 +123,7 @@ func showMenu() {
   15. 分散キャッシュ - キャッシュ戦略
   16. ストリーム処理 - リアルタイム処理
 
-  【エンタープライズ編 17-24】
+  【エンタープライズ編 17-28】
   17. Event Bus - イベント配信システム
   18. Message Bus - メッセージルーティング
   19. 分散ロギング - ログ集約と分析
@@ -124,6 +132,16 @@ func showMenu() {
   22. 時系列データベース - 時系列データ管理
   23. カラムナストレージ - 列指向ストレージ
   24. オブジェクトストレージ - S3風ストレージ
+  25. 分散トレーシング - 処理追跡システム
+  26. サービスメッシュ - マイクロサービス管理
+  27. CQRS/イベントソーシング - 読み書き分離
+  28. タスクスケジューラー - ジョブ管理
+
+  【上級編 29-32】🆕
+  29. Actorモデル - メッセージ駆動並行処理
+  30. Reactive Streams - バックプレッシャー対応ストリーム
+  31. 分散トランザクション - 2PCとACID特性
+  32. Raftコンセンサス - 強一貫性の実装
 
 🚀 おすすめの学習順序:
   1️⃣ まずは例題1〜7で基礎を固める
@@ -232,8 +250,24 @@ func runChallenge(id int) {
 		challenges.RunChallenge23()
 	case 24:
 		challenges.RunChallenge24()
+	case 25:
+		challenges.Challenge25DistributedTracing()
+	case 26:
+		challenges.Challenge26ServiceMesh()
+	case 27:
+		challenges.Challenge27CQRSEventSourcing()
+	case 28:
+		challenges.Challenge28TaskScheduler()
+	case 29:
+		challenges.Challenge29ActorModel()
+	case 30:
+		challenges.Challenge30ReactiveStreams()
+	case 31:
+		challenges.Challenge31DistributedTransaction()
+	case 32:
+		challenges.Challenge32ConsensusRaft()
 	default:
-		fmt.Printf("チャレンジ %d は存在しません (1-24を指定)\n", id)
+		fmt.Printf("チャレンジ %d は存在しません (1-32を指定)\n", id)
 	}
 }
 
@@ -256,21 +290,21 @@ func runSolution(id int) {
 	case 8:
 		solutions.Solution08_FixedPerformance()
 	case 9:
-		solutions.Solution09_DistributedLock()
+		solutions.Challenge09_DistributedLockSolution()
 	case 10:
-		solutions.Solution10_MessageOrdering()
+		solutions.Challenge10_MessageOrderingSolution()
 	case 11:
-		solutions.Solution11_Backpressure()
+		solutions.Challenge11_BackpressureSolution()
 	case 12:
-		solutions.Solution12_Consistency()
+		solutions.Challenge12_ConsistencySolution()
 	case 13:
-		solutions.Solution13_EventSourcing()
+		solutions.Challenge13_EventSourcingSolution()
 	case 14:
-		solutions.Solution14_SagaPattern()
+		solutions.Challenge14_SagaSolution()
 	case 15:
-		solutions.Solution15_DistributedCache()
+		solutions.Challenge15_DistributedCacheSolution()
 	case 16:
-		solutions.Solution16_StreamProcessing()
+		solutions.Challenge16_StreamProcessingSolution()
 	case 17:
 		solutions.RunSolution17()
 	case 18:
@@ -439,4 +473,13 @@ func runInteractive() {
 	default:
 		fmt.Println("無効な選択です")
 	}
+}
+
+func runBattle() {
+	fmt.Println("\n⚔️ Go並行処理バトルアリーナ！")
+	fmt.Println("=====================================")
+	fmt.Println("並行処理の知識を使って対戦しよう！")
+	fmt.Println("")
+	
+	interactive.RunBattleDemo()
 }

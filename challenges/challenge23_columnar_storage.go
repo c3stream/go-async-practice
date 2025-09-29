@@ -418,7 +418,7 @@ func RunChallenge23() {
 	_ = ctx
 
 	// データ書き込み
-	families := []string{"info", "metrics"}
+	_ = []string{"info", "metrics"} // Column families for the example
 
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {

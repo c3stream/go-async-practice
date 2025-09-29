@@ -15,12 +15,12 @@ type EventBusExample struct {
 	mu            sync.RWMutex
 	metrics       *EventMetrics
 	circuitBreaker *CircuitBreaker
-	buffer        chan Event
+	buffer        chan BusEvent
 	workers       int
 	wg            sync.WaitGroup
 }
 
-type Event struct {
+type BusEvent struct {
 	ID          string
 	Type        string
 	Payload     interface{}
@@ -38,8 +38,8 @@ type EventSubscriber struct {
 	Timeout     time.Duration
 }
 
-type EventHandler func(ctx context.Context, event Event) error
-type EventFilter func(event Event) bool
+type EventHandler func(ctx context.Context, event BusEvent) error
+type EventFilter func(event BusEvent) bool
 
 type EventMetrics struct {
 	mu              sync.RWMutex
@@ -77,7 +77,7 @@ func NewEventBusExample(workers int) *EventBusExample {
 			cooldown:    30 * time.Second,
 			state:       "closed",
 		},
-		buffer:  make(chan Event, 10000),
+		buffer:  make(chan BusEvent, 10000),
 		workers: workers,
 	}
 
@@ -126,7 +126,7 @@ func (eb *EventBusExample) Subscribe(eventType string, subscriber EventSubscribe
 }
 
 // Publish sends an event through the bus
-func (eb *EventBusExample) Publish(ctx context.Context, event Event) error {
+func (eb *EventBusExample) Publish(ctx context.Context, event BusEvent) error {
 	// Check circuit breaker
 	if !eb.circuitBreaker.Allow() {
 		return fmt.Errorf("circuit breaker is open")
@@ -172,7 +172,7 @@ func (eb *EventBusExample) worker(id int) {
 }
 
 // processEvent handles event distribution to subscribers
-func (eb *EventBusExample) processEvent(event Event) {
+func (eb *EventBusExample) processEvent(event BusEvent) {
 	eb.mu.RLock()
 	subscribers := eb.subscribers[event.Type]
 	eb.mu.RUnlock()
@@ -224,7 +224,7 @@ func (eb *EventBusExample) processEvent(event Event) {
 }
 
 // executeHandler safely executes a subscriber's handler
-func (eb *EventBusExample) executeHandler(ctx context.Context, subscriber EventSubscriber, event Event) (err error) {
+func (eb *EventBusExample) executeHandler(ctx context.Context, subscriber EventSubscriber, event BusEvent) (err error) {
 	// Panic recovery
 	defer func() {
 		if r := recover(); r != nil {
@@ -354,12 +354,12 @@ func RunEventBusExample() {
 		Priority: 10,
 		MaxRetries: 3,
 		Timeout:  5 * time.Second,
-		Handler: func(ctx context.Context, event Event) error {
+		Handler: func(ctx context.Context, event BusEvent) error {
 			log.Printf("Email service processing user.created: %v", event.Payload)
 			time.Sleep(100 * time.Millisecond) // Simulate processing
 			return nil
 		},
-		Filter: func(event Event) bool {
+		Filter: func(event BusEvent) bool {
 			// Only process events with email field
 			if payload, ok := event.Payload.(map[string]interface{}); ok {
 				_, hasEmail := payload["email"]
@@ -374,7 +374,7 @@ func RunEventBusExample() {
 		Priority: 5,
 		MaxRetries: 2,
 		Timeout:  3 * time.Second,
-		Handler: func(ctx context.Context, event Event) error {
+		Handler: func(ctx context.Context, event BusEvent) error {
 			log.Printf("Analytics service tracking user.created: %v", event.Payload)
 			return nil
 		},
@@ -386,7 +386,7 @@ func RunEventBusExample() {
 		Priority: 1,
 		MaxRetries: 5,
 		Timeout:  10 * time.Second,
-		Handler: func(ctx context.Context, event Event) error {
+		Handler: func(ctx context.Context, event BusEvent) error {
 			log.Printf("Audit service logging event %s of type %s", event.ID, event.Type)
 			return nil
 		},
@@ -396,7 +396,7 @@ func RunEventBusExample() {
 	ctx := context.Background()
 
 	for i := 0; i < 10; i++ {
-		event := Event{
+		event := BusEvent{
 			ID:   fmt.Sprintf("evt-%d", i),
 			Type: "user.created",
 			Payload: map[string]interface{}{

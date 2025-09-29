@@ -3,7 +3,6 @@ package solutions
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -89,7 +88,7 @@ func (g *LockFreeGraph) AddEdge(id, from, to, label string) *Edge {
 }
 
 func (g *LockFreeGraph) BFS(ctx context.Context, start string, maxDepth int) ([]TraversalResult, error) {
-	startNode, ok := g.nodes.Load(start)
+	_, ok := g.nodes.Load(start)
 	if !ok {
 		return nil, fmt.Errorf("node %s not found", start)
 	}
@@ -419,7 +418,7 @@ type OptimisticGraph struct {
 	mu          sync.RWMutex
 	nodes       map[string]*VersionedNode
 	edges       map[string]*VersionedEdge
-	txManager   *TransactionManager
+	txManager   *GraphTransactionManager
 }
 
 type VersionedNode struct {
@@ -447,7 +446,7 @@ type GraphTransaction struct {
 	Status    string
 }
 
-type TransactionManager struct {
+type GraphTransactionManager struct {
 	mu           sync.RWMutex
 	transactions map[string]*GraphTransaction
 	globalClock  int64
@@ -457,7 +456,7 @@ func NewOptimisticGraph() *OptimisticGraph {
 	return &OptimisticGraph{
 		nodes: make(map[string]*VersionedNode),
 		edges: make(map[string]*VersionedEdge),
-		txManager: &TransactionManager{
+		txManager: &GraphTransactionManager{
 			transactions: make(map[string]*GraphTransaction),
 		},
 	}

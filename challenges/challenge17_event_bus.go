@@ -35,7 +35,7 @@ type EventBus struct {
 func NewEventBus() *EventBus {
 	return &EventBus{
 		subscribers:  make(map[string][]EventHandler),
-		eventHistory: make([]Event, 0),
+		eventHistory: make([]EventBusEvent, 0),
 		processing:   make(map[string]bool),
 	}
 }
@@ -103,12 +103,12 @@ func (eb *EventBus) Unsubscribe(eventType string, handler EventHandler) {
 }
 
 // 問題5: メモリリーク
-func (eb *EventBus) GetHistory() []Event {
+func (eb *EventBus) GetHistory() []EventBusEvent {
 	eb.mu.RLock()
 	defer eb.mu.RUnlock()
 
 	// 問題: 大きなスライスのコピー
-	history := make([]Event, len(eb.eventHistory))
+	history := make([]EventBusEvent, len(eb.eventHistory))
 	copy(history, eb.eventHistory)
 	return history
 }
@@ -131,13 +131,13 @@ func RunChallenge17() {
 	ctx := context.Background()
 
 	// サブスクライバー登録
-	eb.Subscribe("user.created", func(ctx context.Context, e Event) error {
+	eb.Subscribe("user.created", func(ctx context.Context, e EventBusEvent) error {
 		fmt.Printf("Handler 1: %+v\n", e)
 		time.Sleep(100 * time.Millisecond)
 		return nil
 	})
 
-	eb.Subscribe("user.created", func(ctx context.Context, e Event) error {
+	eb.Subscribe("user.created", func(ctx context.Context, e EventBusEvent) error {
 		fmt.Printf("Handler 2: %+v\n", e)
 		// 問題: パニックを起こす可能性
 		if e.Payload == nil {
@@ -148,7 +148,7 @@ func RunChallenge17() {
 
 	// イベント発行
 	for i := 0; i < 10; i++ {
-		event := Event{
+		event := EventBusEvent{
 			ID:        fmt.Sprintf("evt-%d", i),
 			Type:      "user.created",
 			Payload:   map[string]interface{}{"userID": i},

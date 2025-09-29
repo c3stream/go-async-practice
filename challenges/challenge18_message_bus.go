@@ -152,7 +152,7 @@ func (mb *MessageBus) JoinConsumerGroup(groupID string, consumer Consumer) error
 // 問題4: メッセージ消費
 func (mb *MessageBus) Consume(ctx context.Context, groupID string, topic string) (<-chan Message, error) {
 	mb.mu.RLock()
-	group, exists := mb.groups[groupID]
+	_, exists := mb.groups[groupID]
 	mb.mu.RUnlock()
 
 	if !exists {

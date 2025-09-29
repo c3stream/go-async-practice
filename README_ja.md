@@ -11,11 +11,15 @@ Goの並行処理パターンを実践的に学べる総合学習環境です。
 ### ✨ 特徴
 
 - 🎓 **16種類の並行処理パターン** - 基礎から実践まで
-- 🎯 **16個のチャレンジ問題** - 実際のバグや分散システムの問題を修正して学習
+- 🎯 **32個のチャレンジ問題** - 実際のバグや分散システムの問題を修正して学習
 - 📊 **自動評価システム** - コードを即座に採点
 - 🐳 **Docker統合** - 15種類以上のデータベース・メッセージングサービス
 - 🧪 **包括的なテスト** - Unit/Integration/E2E完備
 - 🚀 **ベンチマーク** - パフォーマンス測定
+- 🎮 **インタラクティブ学習** - チュートリアル、クイズ、演習問題 🆕
+- 📈 **進捗追跡** - XP、レベル、実績システム 🆕
+- 📚 **ステップバイステップ** - 対話型チュートリアル 🆕
+- ⚔️ **バトルアリーナ** - 並行処理スキルで対戦！ 🆕
 
 ## 🚀 クイックスタート
 
@@ -55,7 +59,7 @@ go run cmd/runner/main.go
 - **リトライ処理** - エラーハンドリング
 - **バッチ処理** - 効率的なデータ処理
 
-## 🎯 チャレンジ問題（全16問）
+## 🎯 チャレンジ問題（全32問）
 
 ### 基本的な並行処理の問題（1-4）
 1. **デッドロックの修正** - 相互待機の解決
@@ -81,6 +85,28 @@ go run cmd/runner/main.go
 15. **分散キャッシュ** - キャッシュ一貫性とスタンピード対策
 16. **ストリーム処理** - リアルタイムデータパイプライン
 
+### エンタープライズパターン（17-24）
+17. **イベントバス** - Pub/Subシステム、サーキットブレーカー統合
+18. **メッセージバス** - パーティショニング、Exactly-once配信
+19. **分散ロギング** - 構造化ログ、バッファリング、集約
+20. **ブロックチェーン合意** - PoW、PBFT、Raftアルゴリズム
+21. **グラフデータベース** - ロックフリートラバーサル、楽観的並行制御
+22. **時系列データベース** - データ圧縮、ウィンドウ集計、ダウンサンプリング
+23. **カラムナーストレージ** - LSMツリー、WAL、ワイドカラム
+24. **オブジェクトストレージ** - S3互換、マルチパート、イレイジャーコーディング
+
+### 高度な分散システム（25-28）
+25. **分散トレーシング** - OpenTelemetry風、スパン管理、コンテキスト伝播
+26. **サービスメッシュ** - Circuit Breaker、ロードバランサー、リトライ制御
+27. **CQRS統合** - コマンド/クエリ分離、イベントソーシング統合、プロジェクション
+28. **分散タスクスケジューラ** - ワークスティーリング、優先度キュー、動的スケーリング
+
+### 上級並行処理パターン（29-32）🆕
+29. **Actorモデル** - メッセージ駆動、スーパービジョンツリー、フォルトトレランス
+30. **Reactive Streams** - バックプレッシャー対応、Hot/Cold Observable、演算子
+31. **分散トランザクション** - 2PC、ACID特性、分離レベル、デッドロック検出
+32. **Raftコンセンサス** - リーダー選出、ログレプリケーション、強一貫性
+
 ## 🏃 実行方法
 
 ### 例題の実行
@@ -96,25 +122,48 @@ done
 
 ### チャレンジ問題
 ```bash
-# チャレンジ1-16から選択
+# チャレンジ1-32から選択
 go run cmd/runner/main.go -mode=challenge -challenge=1   # デッドロック
 go run cmd/runner/main.go -mode=challenge -challenge=9   # 分散ロック
 go run cmd/runner/main.go -mode=challenge -challenge=13  # イベントソーシング
+go run cmd/runner/main.go -mode=challenge -challenge=17  # イベントバス
+go run cmd/runner/main.go -mode=challenge -challenge=21  # グラフDB
+go run cmd/runner/main.go -mode=challenge -challenge=25  # 分散トレーシング
+go run cmd/runner/main.go -mode=challenge -challenge=26  # サービスメッシュ
+go run cmd/runner/main.go -mode=challenge -challenge=27  # CQRS統合
+go run cmd/runner/main.go -mode=challenge -challenge=28  # タスクスケジューラ
+go run cmd/runner/main.go -mode=challenge -challenge=29  # Actorモデル 🆕
+go run cmd/runner/main.go -mode=challenge -challenge=30  # Reactive Streams 🆕
+go run cmd/runner/main.go -mode=challenge -challenge=31  # 分散トランザクション 🆕
+go run cmd/runner/main.go -mode=challenge -challenge=32  # Raftコンセンサス 🆕
 
-# 解答例を確認（1-14完全対応）
+# 解答例を確認（1-24完全対応）
 go run cmd/runner/main.go -mode=solution -challenge=1   # デッドロック
 go run cmd/runner/main.go -mode=solution -challenge=11  # バックプレッシャー
 go run cmd/runner/main.go -mode=solution -challenge=12  # 分散一貫性
 go run cmd/runner/main.go -mode=solution -challenge=13  # イベントソーシング
 go run cmd/runner/main.go -mode=solution -challenge=14  # Sagaパターン
-
-# チャレンジ15-16は解答作成中
+go run cmd/runner/main.go -mode=solution -challenge=17  # イベントバス
+go run cmd/runner/main.go -mode=solution -challenge=20  # ブロックチェーン
+go run cmd/runner/main.go -mode=solution -challenge=24  # オブジェクトストレージ
 ```
 
 ### 自動評価
 ```bash
 # あなたのコードを評価
 go run cmd/runner/main.go -mode=evaluate
+
+# インタラクティブ学習システム 🆕
+go run cmd/runner/main.go -mode=interactive
+
+# バトルアリーナ 🆕
+go run cmd/runner/main.go -mode=battle
+
+# チュートリアルモード 🆕
+go run cmd/runner/main.go -mode=tutorial -tutorial=goroutines-basics
+go run cmd/runner/main.go -mode=tutorial -tutorial=channels-mastery
+go run cmd/runner/main.go -mode=tutorial -tutorial=advanced-patterns
+go run cmd/runner/main.go -mode=tutorial -tutorial=distributed-systems
 ```
 
 ## 🐳 Docker環境
@@ -202,8 +251,8 @@ BenchmarkUnbufferedChannel:   141.9 ns/op
 go-async-practice/
 ├── cmd/runner/         # CLIエントリーポイント
 ├── examples/           # 学習用例題（16パターン）
-├── challenges/         # チャレンジ問題（16問）
-├── solutions/          # 解答例（14問完全対応、Challenge 1-14）
+├── challenges/         # チャレンジ問題（24問）
+├── solutions/          # 解答例（24問完全対応、各3つの解法）
 ├── practical/          # 実践的な例（Docker必須）
 ├── benchmarks/         # パフォーマンス測定
 ├── internal/evaluator/ # 自動評価システム
@@ -222,9 +271,9 @@ graph LR
     B --> C[応用編 8-11]
     C --> D[チャレンジ 5-8]
     D --> E[実践編 12-16]
-    E --> F[チャレンジ 9-14]
+    E --> F[チャレンジ 9-16]
     F --> G[Docker実践]
-    G --> H[チャレンジ 15-16]
+    G --> H[チャレンジ 17-24]
 ```
 
 ### 段階的アプローチ
@@ -237,6 +286,7 @@ graph LR
 6. **分散システム** - チャレンジ9-14で分散ロック、一貫性、イベントソーシング
 7. **Docker実践** - 各種データベース、メッセージングシステムとの統合
 8. **高度な課題** - チャレンジ15-16で分散キャッシュ、ストリーム処理に挑戦
+9. **エンタープライズ** - チャレンジ17-24でプロダクションレベルのシステム構築
 
 ## 🛠 開発環境
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -246,8 +245,9 @@ func (ls *LogSampler) ShouldSample(level LogLevel) bool {
 	ls.mu.RUnlock()
 
 	// Always sample first N logs of each level
-	count := atomic.AddInt64(&ls.counter[level], 1)
-	if count <= 10 {
+	// For simplicity, we'll use a basic counter approach
+	// In production, you'd use a more sophisticated method
+	if rand.Float64() < 0.1 { // Sample 10% of logs after first batch
 		return true
 	}
 

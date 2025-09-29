@@ -29,11 +29,14 @@ make run-practical PATTERN=echo-server # Webサーバー
 - **オブジェクトストレージ**: MinIO (S3互換), LocalStack (AWS互換)
 - **モニタリング**: Prometheus, Grafana, Jaeger
 
-### 🎮 インタラクティブ学習機能
-- リアルタイムビジュアライザー
-- 対話型練習問題
-- 学習進捗トラッキング（XP/レベルシステム）
-- デバッグヘルパーツール
+### 🎮 インタラクティブ学習機能 🆕
+- **学習システム**: XP/レベル/実績システム完備
+- **チュートリアル**: ステップバイステップの対話型学習
+- **リアルタイムビジュアライザー**: 進捗・スキル・活動の可視化
+- **対話型練習問題**: クイズと演習問題
+- **学習進捗トラッキング**: 個人成績とリーダーボード
+- **デバッグヘルパーツール**: 問題解決支援
+- **⚔️ バトルアリーナ**: 並行処理スキルを使った対戦システム！
 
 ## 📚 コンテンツ構成
 
@@ -55,7 +58,7 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Retry with Exponential Backoff
 - Batch Processing
 
-### 2. Challenges（チャレンジ）- 24問
+### 2. Challenges（チャレンジ）- 32問 🚀
 実際の問題を解いて理解を深める：
 
 **基礎問題（1-8）**：
@@ -78,7 +81,7 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Challenge 15: 分散キャッシュの問題
 - Challenge 16: ストリーム処理の問題
 
-**エンタープライズパターン（17-24）** 🆕：
+**エンタープライズパターン（17-24）**：
 - Challenge 17: Event Busパターンの実装
 - Challenge 18: Message Busとルーティング
 - Challenge 19: 分散ロギングシステム
@@ -87,6 +90,18 @@ make run-practical PATTERN=echo-server # Webサーバー
 - Challenge 22: 時系列データベース
 - Challenge 23: カラムナストレージエンジン
 - Challenge 24: オブジェクトストレージシステム
+
+**高度な分散システム（25-28）**：
+- Challenge 25: 分散トレーシング（OpenTelemetry風）
+- Challenge 26: サービスメッシュパターン（Circuit Breaker統合）
+- Challenge 27: CQRS and Event Sourcing統合
+- Challenge 28: 分散タスクスケジューラ（Work Stealing）
+
+**上級並行処理パターン（29-32）** 🆕：
+- Challenge 29: Actorモデル（メッセージ駆動、スーパービジョンツリー）
+- Challenge 30: Reactive Streams（バックプレッシャー対応、Hot/Cold Observable）
+- Challenge 31: 分散トランザクションコーディネータ（2PC、ACID特性）
+- Challenge 32: Raftコンセンサスアルゴリズム（リーダー選出、ログレプリケーション）
 
 ### 3. Solutions（解答例）- ✅ 16問完全対応（1-16）
 全てのチャレンジに複数の解法を提供：
@@ -139,14 +154,18 @@ go run cmd/runner/main.go -mode=example -example=1
 
 ### チャレンジに挑戦
 ```bash
-# チャレンジを実行（1-16の問題から選択）
-go run cmd/runner/main.go -mode=challenge -challenge=1  # デッドロック
-go run cmd/runner/main.go -mode=challenge -challenge=5  # メモリリーク
+# チャレンジを実行（1-28の問題から選択）
+go run cmd/runner/main.go -mode=challenge -challenge=1   # デッドロック
+go run cmd/runner/main.go -mode=challenge -challenge=5   # メモリリーク
 go run cmd/runner/main.go -mode=challenge -challenge=13  # イベントソーシング
+go run cmd/runner/main.go -mode=challenge -challenge=25  # 分散トレーシング 🆕
+go run cmd/runner/main.go -mode=challenge -challenge=26  # サービスメッシュ 🆕
+go run cmd/runner/main.go -mode=challenge -challenge=27  # CQRS/イベントソーシング 🆕
+go run cmd/runner/main.go -mode=challenge -challenge=28  # タスクスケジューラ 🆕
 
 # challenges/challenge0X_*.go を編集して修正
 
-# 解答例を確認（✅ 1-16全て対応済み）
+# 解答例を確認（✅ 1-24全て対応済み）
 go run cmd/runner/main.go -mode=solution -challenge=1   # デッドロック
 go run cmd/runner/main.go -mode=solution -challenge=8   # パフォーマンス改善
 go run cmd/runner/main.go -mode=solution -challenge=11  # バックプレッシャー
@@ -155,6 +174,8 @@ go run cmd/runner/main.go -mode=solution -challenge=13  # イベントソーシ�
 go run cmd/runner/main.go -mode=solution -challenge=14  # Sagaパターン
 go run cmd/runner/main.go -mode=solution -challenge=15  # 分散キャッシュ
 go run cmd/runner/main.go -mode=solution -challenge=16  # ストリーム処理
+go run cmd/runner/main.go -mode=solution -challenge=20  # ブロックチェーン合意
+go run cmd/runner/main.go -mode=solution -challenge=24  # オブジェクトストレージ
 ```
 
 ### ベンチマークを実行
@@ -172,6 +193,18 @@ go run -race cmd/runner/main.go -mode=example -example=2
 go run cmd/runner/main.go -mode=evaluate
 ```
 
+### インタラクティブ学習モード 🆕
+```bash
+# インタラクティブ学習システムを起動
+go run cmd/runner/main.go -mode=interactive
+
+# チュートリアルを開始
+go run cmd/runner/main.go -mode=tutorial -tutorial=goroutines-basics
+go run cmd/runner/main.go -mode=tutorial -tutorial=channels-mastery
+go run cmd/runner/main.go -mode=tutorial -tutorial=advanced-patterns
+go run cmd/runner/main.go -mode=tutorial -tutorial=distributed-systems
+```
+
 ## 📂 ディレクトリ構造
 
 ```
@@ -179,8 +212,8 @@ go run cmd/runner/main.go -mode=evaluate
 ├── docker-compose.yml # 全インフラ定義
 ├── Makefile          # 便利コマンド集
 ├── examples/         # 学習用例題（16パターン）
-├── challenges/       # 修正が必要な問題コード（16問）
-├── solutions/        # 複数の解答例（1-8完全対応）
+├── challenges/       # 修正が必要な問題コード（28問）🆕
+├── solutions/        # 複数の解答例（1-24完全対応）
 ├── practical/        # 実践的な分散システム例
 │   ├── rabbitmq_example.go      # メッセージキュー
 │   ├── kafka_example.go         # イベントストリーミング
@@ -196,9 +229,12 @@ go run cmd/runner/main.go -mode=evaluate
 │   ├── duckdb_analytics.go     # 分析用DB
 │   ├── event_driven_example.go # イベント駆動
 │   ├── event_bus_example.go    # Event Busパターン 🆕
-│   ├── message_bus_example.go  # Message Busパターン 🆕
-│   └── distributed_logging_example.go # 分散ロギング 🆕
-├── interactive/      # インタラクティブ練習
+│   ├── message_bus_example.go  # Message Busパターン
+│   └── distributed_logging_example.go # 分散ロギング
+├── interactive/      # インタラクティブ練習 🆕
+│   ├── learning_system.go # 学習管理システム
+│   ├── tutorial_system.go # チュートリアル
+│   └── visualizer.go     # 進捗可視化
 ├── visualizer/       # リアルタイム可視化
 ├── debugger/         # デバッグ支援
 ├── tracker/          # 進捗管理
